@@ -24,6 +24,13 @@
                     Padding="20,10"
                     FontSize="16"
                     Command="{s:Action NavigateToAbout}"
+                    HorizontalAlignment="Center"
+                    Margin="0,0,0,15"/>
+
+            <Button Content="测试剪贴板" 
+                    Padding="20,10"
+                    FontSize="16"
+                    Command="{s:Action GetClipboardContent}"
                     HorizontalAlignment="Center"/>
         </StackPanel>
     </Grid>
