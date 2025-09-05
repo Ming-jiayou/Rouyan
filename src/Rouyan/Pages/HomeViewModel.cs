@@ -32,6 +32,11 @@ public class HomeViewModel : Screen
       
     }
 
+    public void ExecuteTranslation()
+    {
+        MessageBox.Show("翻译功能正在开发中...", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
     public void SelectFile()
     {
         try
