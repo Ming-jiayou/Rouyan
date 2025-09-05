@@ -1,0 +1,30 @@
+<Window x:Class="Rouyan.Pages.ShellView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Rouyan.Pages"
+        mc:Ignorable="d"
+        Title="Rouyan导航应用" Height="500" Width="900"
+        xmlns:s="https://github.com/canton7/Stylet"
+        d:DataContext="{d:DesignInstance local:ShellViewModel}">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <!-- 左侧导航菜单 -->
+            <ColumnDefinition Width="200"/>
+            <!-- 右侧内容区域 -->
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        
+        <!-- 左侧导航栏 -->
+        <ContentControl Grid.Column="0" 
+                        s:View.Model="{Binding HeaderViewModel}"/>
+        
+        <!-- 右侧内容区域 -->
+        <ScrollViewer Grid.Column="1" 
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto">
+            <ContentControl s:View.Model="{Binding ActiveItem}"/>
+        </ScrollViewer>
+    </Grid>
+</Window>
