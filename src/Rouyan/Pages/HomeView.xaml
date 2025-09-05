@@ -8,14 +8,52 @@
              d:DesignHeight="450" d:DesignWidth="700">
     <Grid Background="#F5F5F5">
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="600">
-            <!-- 第一行：获取剪贴板内容按钮 -->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,20">
-                <Button Content="获取剪贴板内容" 
-                        Padding="20,10"
-                        FontSize="16"
+            <!-- 第一行：四列布局 -->
+            <Grid HorizontalAlignment="Center" Width="600" Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 第一列：现有的获取剪贴板内容按钮 -->
+                <Button Grid.Column="0"
+                        Content="获取剪贴板内容"
+                        Padding="10,5"
+                        FontSize="14"
                         Command="{s:Action GetClipboardContent}"
-                        HorizontalAlignment="Center"/>
-            </StackPanel>
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"/>
+
+                <!-- 第二列：选择文件按钮 -->
+                <Button Grid.Column="1"
+                     Content="选择文件"
+                     Padding="10,5"
+                     FontSize="14"
+                     Command="{s:Action SelectFile}"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"/>
+
+                <!-- 第三列：TextBox -->
+                <TextBox Grid.Column="2"
+                         Text="{Binding SelectedFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         Height="30"
+                         Margin="10,0"
+                         FontSize="14"
+                         VerticalContentAlignment="Center"
+                         BorderBrush="#FFABABAB"
+                         BorderThickness="1"/>
+                
+                <!-- 第四列：测试按钮 -->
+                <Button Grid.Column="3"
+                        Content="测试"
+                        Padding="15,5"
+                        FontSize="14"
+                        Command="{s:Action TestMethod}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"/>
+            </Grid>
             
             <!-- 第二行：两列布局 - 左侧TextBox，右侧Image -->
             <Grid HorizontalAlignment="Center" Width="600" Height="200">

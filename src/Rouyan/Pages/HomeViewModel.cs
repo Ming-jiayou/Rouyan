@@ -26,7 +26,48 @@ public class HomeViewModel : Screen
             }
         }
     }
+    
+    public void TestMethod()
+    {
+      
+    }
 
+    public void SelectFile()
+    {
+        try
+        {
+            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "选择文件",
+                Filter = "所有文件 (*.*)|*.*",
+                RestoreDirectory = true
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                SelectedFilePath = openFileDialog.FileName;
+            }
+        }
+        catch (Exception ex)
+        {           
+            MessageBox.Show($"选择文件失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private string _selectedFilePath = string.Empty;
+    public string SelectedFilePath
+    {
+        get => _selectedFilePath;
+        set
+        {
+            if (_selectedFilePath != value)
+            {
+                _selectedFilePath = value;
+                NotifyOfPropertyChange();
+            }
+        }
+    }
+    
     private BitmapSource? _clipboardImage;
     public BitmapSource? ClipboardImage
     {
