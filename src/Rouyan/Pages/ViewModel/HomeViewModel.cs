@@ -32,33 +32,95 @@ public class HomeViewModel : Screen
         }
     }
     
-    public async Task TestMethod()
+    public async Task TranslateToChinese()
     {
-        DotEnv.Load();
-        var envVars = DotEnv.Read();
-        ApiKeyCredential apiKeyCredential = new ApiKeyCredential(envVars["OPENAI_API_KEY"]);
+        try
+        {
+            // 获取剪切板文本 - 确保在UI线程上执行
+            string clipboardText = string.Empty;
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                ClipboardText = string.Empty;
+                if (Clipboard.ContainsText())
+                {
+                    clipboardText = Clipboard.GetText();
+                    ClipboardText = clipboardText;
+                }
+            });
 
-        OpenAIClientOptions openAIClientOptions = new OpenAIClientOptions();
-        openAIClientOptions.Endpoint = new Uri(envVars["OPENAI_BASE_URL"]);
+            if (string.IsNullOrEmpty(clipboardText))
+            {
+                MessageBox.Show("剪贴板中没有文本内容", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
 
-        IChatClient client =
-                       new OpenAI.Chat.ChatClient(envVars["OPENAI_CHAT_MODEL"], apiKeyCredential, openAIClientOptions)
-                       .AsIChatClient();
+            // 使用大语言模型翻译文本
+            DotEnv.Load();
+            var envVars = DotEnv.Read();
+            ApiKeyCredential apiKeyCredential = new ApiKeyCredential(envVars["OPENAI_API_KEY"]);
 
-        // Note: To use the ChatClientBuilder you need to install the Microsoft.Extensions.AI package
-        var ChatClient = new ChatClientBuilder(client)
-             .UseFunctionInvocation()
-             .Build();
-        IList<Microsoft.Extensions.AI.ChatMessage> Messages =
-           [
-               // Add a system message
-               new(ChatRole.System, "You are a helpful assistant."),
-            ];
+            OpenAIClientOptions openAIClientOptions = new OpenAIClientOptions();
+            openAIClientOptions.Endpoint = new Uri(envVars["OPENAI_BASE_URL"]);
 
-        Messages.Add(new(ChatRole.User, "你是谁？"));
+            IChatClient client =
+                           new OpenAI.Chat.ChatClient(envVars["OPENAI_CHAT_MODEL"], apiKeyCredential, openAIClientOptions)
+                           .AsIChatClient();
 
-        var response = await ChatClient.GetResponseAsync(Messages);
+            // Note: To use the ChatClientBuilder you need to install the Microsoft.Extensions.AI package
+            var ChatClient = new ChatClientBuilder(client)
+                 .UseFunctionInvocation()
+                 .Build();
+            IList<Microsoft.Extensions.AI.ChatMessage> Messages =
+               [
+                   // Add a system message
+                   new(ChatRole.System, """
+                   你是一个中文翻译助手，你可以将用户输入的中文翻译为英文。
+                   输入：你今天怎么样
+                   输出：How are you today?
+                   """),
+                ];
 
+            Messages.Add(new(ChatRole.User, ClipboardText));
+
+            var response = await ChatClient.GetResponseAsync(Messages);
+
+            // 添加到选择的文件中
+            if (!string.IsNullOrEmpty(SelectedFilePath))
+            {
+                try
+                {                
+                    // 追加写入文件
+                    await File.AppendAllTextAsync(SelectedFilePath, response.Text + Environment.NewLine);
+                    
+                    // 在UI线程上显示消息
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        MessageBox.Show($"翻译结果已添加到文件：{SelectedFilePath}", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    });
+                }
+                catch (Exception ex)
+                {
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        MessageBox.Show($"写入文件失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    });
+                }
+            }
+            else
+            {
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    MessageBox.Show("请先选择要写入的文件", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                MessageBox.Show($"执行操作时出错：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            });
+        }
     }
 
     public void ExecuteTranslation()
