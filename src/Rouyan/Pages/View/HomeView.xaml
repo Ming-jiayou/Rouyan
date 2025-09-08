@@ -57,7 +57,7 @@
                         Content="测试"
                         Padding="15,5"
                         FontSize="14"
-                        Command="{s:Action TestMethod}"
+                        Command="{s:Action Test}"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"/>
             </Grid>

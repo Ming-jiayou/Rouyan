@@ -6,7 +6,7 @@ using System.Windows.Threading;
 namespace Rouyan.Services
 {
     /// <summary>
-    /// 全局热键序列服务，支持Ctrl+T+C组合键
+    /// 全局热键序列服务，支持多种组合键
     /// </summary>
     public class KeySequenceService : IDisposable
     {
@@ -38,32 +38,46 @@ namespace Rouyan.Services
         private const int WM_KEYDOWN = 0x0100;
         
         // 按键常量
-        private const int VK_CONTROL = 0x11;
         private const int VK_T = 0x54;
         private const int VK_C = 0x43;
+        private const int VK_M = 0x4D;
+        private const int VK_D = 0x44;
         
         // 序列超时时间（毫秒）
         private const int SEQUENCE_TIMEOUT_MS = 2000;
 
         #endregion
 
+        #region Enums
+
+        private enum HotkeyMode
+        {
+            None,
+            WaitingForC,
+            WaitingForD
+        }
+
+        #endregion
+
         #region Fields
 
-        private readonly Action _executeAction;
+        private readonly Action _tCAction;
+        private readonly Action _mDAction;
         private IntPtr _hookID = IntPtr.Zero;
         private readonly LowLevelKeyboardProc _proc;
         
         // 键序列状态
-        private bool _waitingForC = false;
-        private DateTime _lastTKeyTime = DateTime.MinValue;
+        private HotkeyMode _currentMode = HotkeyMode.None;
+        private DateTime _sequenceStartTime = DateTime.MinValue;
 
         #endregion
 
         #region Constructor & Initialization
 
-        public KeySequenceService(Window window, Action executeAction)
+        public KeySequenceService(Window window, Action tcAction, Action mdAction)
         {
-            _executeAction = executeAction ?? throw new ArgumentNullException(nameof(executeAction));
+            _tCAction = tcAction ?? throw new ArgumentNullException(nameof(tcAction));
+            _mDAction = mdAction ?? throw new ArgumentNullException(nameof(mdAction));
             _proc = HookCallback;
         }
 
@@ -78,7 +92,7 @@ namespace Rouyan.Services
                 }
                 else
                 {
-                    Console.WriteLine("全局热键 Ctrl+T+C 已注册");
+                    Console.WriteLine("全局热键已注册：T+C (翻译), M+D (表格翻译)");
                 }
             }
             catch (Exception ex)
@@ -116,48 +130,86 @@ namespace Rouyan.Services
 
         private void HandleKeyDown(int vkCode)
         {
-            bool ctrlPressed = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
+            switch (_currentMode)
+            {
+                case HotkeyMode.None:
+                    if (vkCode == VK_T)
+                    {
+                        _currentMode = HotkeyMode.WaitingForC;
+                        _sequenceStartTime = DateTime.Now;
+                        Console.WriteLine("检测到 T 键，等待按下 C 键...");
+                    }
+                    else if (vkCode == VK_M)
+                    {
+                        _currentMode = HotkeyMode.WaitingForD;
+                        _sequenceStartTime = DateTime.Now;
+                        Console.WriteLine("检测到 M 键，等待按下 D 键...");
+                    }
+                    break;
 
-            if (ctrlPressed && vkCode == VK_T)
-            {
-                // 检测到 Ctrl+T，开始等待 C 键
-                _waitingForC = true;
-                _lastTKeyTime = DateTime.Now;
-                Console.WriteLine("检测到 Ctrl+T，等待按下 C 键...");
-            }
-            else if (_waitingForC && vkCode == VK_C)
-            {
-                // 检查是否在超时时间内按下了 C 键
-                if ((DateTime.Now - _lastTKeyTime).TotalMilliseconds <= SEQUENCE_TIMEOUT_MS)
-                {
-                    Console.WriteLine("检测到完整组合键 Ctrl+T+C，执行操作...");
+                case HotkeyMode.WaitingForC:
+                    if (vkCode == VK_C)
+                    {
+                        if (IsTimeout())
+                        {
+                            Console.WriteLine("按键序列 T+C 超时");
+                        }
+                        else
+                        {
+                            Console.WriteLine("检测到完整组合键 T+C，执行翻译操作...");
+                            ExecuteTCAction();
+                        }
+                    }
                     ResetState();
-                    ExecuteAction();
-                }
-                else
-                {
-                    Console.WriteLine("按键超时，重置状态");
+                    break;
+
+                case HotkeyMode.WaitingForD:
+                    if (vkCode == VK_D)
+                    {
+                        if (IsTimeout())
+                        {
+                            Console.WriteLine("按键序列 M+D 超时");
+                        }
+                        else
+                        {
+                            Console.WriteLine("检测到完整组合键 M+D，执行表格翻译操作...");
+                            ExecuteMDAction();
+                        }
+                    }
                     ResetState();
-                }
+                    break;
             }
-            else if (_waitingForC)
+
+            // 检查超时并重置状态
+            if (_currentMode != HotkeyMode.None && IsTimeout())
             {
-                // 按下了其他键或超时，重置状态
-                if ((DateTime.Now - _lastTKeyTime).TotalMilliseconds > SEQUENCE_TIMEOUT_MS)
-                {
-                    Console.WriteLine("按键序列超时");
-                }
+                Console.WriteLine("按键序列超时");
                 ResetState();
             }
         }
 
-        private void ResetState()
+        private bool IsTimeout()
         {
-            _waitingForC = false;
-            _lastTKeyTime = DateTime.MinValue;
+            return (DateTime.Now - _sequenceStartTime).TotalMilliseconds > SEQUENCE_TIMEOUT_MS;
         }
 
-        private void ExecuteAction()
+        private void ResetState()
+        {
+            _currentMode = HotkeyMode.None;
+            _sequenceStartTime = DateTime.MinValue;
+        }
+
+        private void ExecuteTCAction()
+        {
+            ExecuteAction(_tCAction);
+        }
+
+        private void ExecuteMDAction()
+        {
+            ExecuteAction(_mDAction);
+        }
+
+        private void ExecuteAction(Action action)
         {
             try
             {
@@ -166,7 +218,7 @@ namespace Rouyan.Services
                 {
                     try
                     {
-                        _executeAction?.Invoke();
+                        action?.Invoke();
                     }
                     catch (Exception ex)
                     {
