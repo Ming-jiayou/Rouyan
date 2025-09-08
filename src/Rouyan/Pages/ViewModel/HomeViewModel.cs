@@ -1,11 +1,16 @@
-using System;
-using System.Windows;
-using System.Windows.Media.Imaging;
+using dotenv.net;
+using Microsoft.Extensions.AI;
+using OpenAI;
+using OpenAI.Chat;
 using Stylet;
-using System.IO;
-using System.Windows.Interop;
+using System;
+using System.ClientModel;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
+using System.Windows;
+using System.Windows.Interop;
+using System.Windows.Media.Imaging;
 
 namespace Rouyan.Pages;
 
@@ -27,9 +32,33 @@ public class HomeViewModel : Screen
         }
     }
     
-    public void TestMethod()
+    public async Task TestMethod()
     {
-      
+        DotEnv.Load();
+        var envVars = DotEnv.Read();
+        ApiKeyCredential apiKeyCredential = new ApiKeyCredential(envVars["OPENAI_API_KEY"]);
+
+        OpenAIClientOptions openAIClientOptions = new OpenAIClientOptions();
+        openAIClientOptions.Endpoint = new Uri(envVars["OPENAI_BASE_URL"]);
+
+        IChatClient client =
+                       new OpenAI.Chat.ChatClient(envVars["OPENAI_CHAT_MODEL"], apiKeyCredential, openAIClientOptions)
+                       .AsIChatClient();
+
+        // Note: To use the ChatClientBuilder you need to install the Microsoft.Extensions.AI package
+        var ChatClient = new ChatClientBuilder(client)
+             .UseFunctionInvocation()
+             .Build();
+        IList<Microsoft.Extensions.AI.ChatMessage> Messages =
+           [
+               // Add a system message
+               new(ChatRole.System, "You are a helpful assistant."),
+            ];
+
+        Messages.Add(new(ChatRole.User, "你是谁？"));
+
+        var response = await ChatClient.GetResponseAsync(Messages);
+
     }
 
     public void ExecuteTranslation()

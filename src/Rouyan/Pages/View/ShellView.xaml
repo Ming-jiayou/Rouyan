@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Rouyan.Pages"
         mc:Ignorable="d"
-        Title="Rouyan导航应用" Height="500" Width="900"
+        Title="Rouyan导航应用" Height="800" Width="1200"
         xmlns:s="https://github.com/canton7/Stylet"
         d:DataContext="{d:DesignInstance local:ShellViewModel}">
     <Grid>

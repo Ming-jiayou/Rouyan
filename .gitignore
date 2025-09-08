@@ -329,3 +329,4 @@ ASALocalRun/
 **/bin/
 **/obj/
 **/.vs/
+*.env
