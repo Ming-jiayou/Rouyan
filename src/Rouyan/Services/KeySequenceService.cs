@@ -42,6 +42,8 @@ namespace Rouyan.Services
         private const int VK_C = 0x43;
         private const int VK_M = 0x4D;
         private const int VK_D = 0x44;
+        private const int VK_E = 0x45;
+        private const int VK_I = 0x49;
         
         // 序列超时时间（毫秒）
         private const int SEQUENCE_TIMEOUT_MS = 2000;
@@ -54,7 +56,8 @@ namespace Rouyan.Services
         {
             None,
             WaitingForC,
-            WaitingForD
+            WaitingForD,
+            WaitingForI
         }
 
         #endregion
@@ -63,6 +66,7 @@ namespace Rouyan.Services
 
         private readonly Action _tCAction;
         private readonly Action _mDAction;
+        private readonly Action _eIAction;
         private IntPtr _hookID = IntPtr.Zero;
         private readonly LowLevelKeyboardProc _proc;
         
@@ -74,10 +78,11 @@ namespace Rouyan.Services
 
         #region Constructor & Initialization
 
-        public KeySequenceService(Window window, Action tcAction, Action mdAction)
+        public KeySequenceService(Window window, Action tcAction, Action mdAction, Action eiAction)
         {
             _tCAction = tcAction ?? throw new ArgumentNullException(nameof(tcAction));
             _mDAction = mdAction ?? throw new ArgumentNullException(nameof(mdAction));
+            _eIAction = eiAction ?? throw new ArgumentNullException(nameof(eiAction));
             _proc = HookCallback;
         }
 
@@ -92,7 +97,7 @@ namespace Rouyan.Services
                 }
                 else
                 {
-                    Console.WriteLine("全局热键已注册：T+C (翻译), M+D (表格翻译)");
+                    Console.WriteLine("全局热键已注册：T+C (翻译), M+D (表格翻译), E+I (图片解释)");
                 }
             }
             catch (Exception ex)
@@ -145,6 +150,12 @@ namespace Rouyan.Services
                         _sequenceStartTime = DateTime.Now;
                         Console.WriteLine("检测到 M 键，等待按下 D 键...");
                     }
+                    else if (vkCode == VK_E)
+                    {
+                        _currentMode = HotkeyMode.WaitingForI;
+                        _sequenceStartTime = DateTime.Now;
+                        Console.WriteLine("检测到 E 键，等待按下 I 键...");
+                    }
                     break;
 
                 case HotkeyMode.WaitingForC:
@@ -178,6 +189,22 @@ namespace Rouyan.Services
                     }
                     ResetState();
                     break;
+
+                case HotkeyMode.WaitingForI:
+                    if (vkCode == VK_I)
+                    {
+                        if (IsTimeout())
+                        {
+                            Console.WriteLine("按键序列 E+I 超时");
+                        }
+                        else
+                        {
+                            Console.WriteLine("检测到完整组合键 E+I，执行图片解释操作...");
+                            ExecuteEIAction();
+                        }
+                    }
+                    ResetState();
+                    break;
             }
 
             // 检查超时并重置状态
@@ -207,6 +234,11 @@ namespace Rouyan.Services
         private void ExecuteMDAction()
         {
             ExecuteAction(_mDAction);
+        }
+
+        private void ExecuteEIAction()
+        {
+            ExecuteAction(_eIAction);
         }
 
         private void ExecuteAction(Action action)

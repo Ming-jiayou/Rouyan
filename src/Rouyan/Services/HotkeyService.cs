@@ -8,7 +8,7 @@ namespace Rouyan.Services
 {
     /// <summary>
     /// 全局热键服务管理器
-    /// 负责初始化和管理多种热键组合：T+C (文本翻译) 和 M+D (表格翻译)
+    /// 负责初始化和管理多种热键组合：T+C (文本翻译)、M+D (表格翻译) 和 E+I (图片解释)
     /// </summary>
     public class HotkeyService : IDisposable
     {
@@ -31,7 +31,8 @@ namespace Rouyan.Services
                 _keySequenceService = new KeySequenceService(
                     mainWindow,
                     ExecuteTranslateAction,
-                    ExecuteMarkdownTableAction);
+                    ExecuteMarkdownTableAction,
+                    ExecuteExplainImageAction);
                 _keySequenceService.RegisterHotKeys();
             }
             catch (Exception ex)
@@ -78,6 +79,31 @@ namespace Rouyan.Services
                 if (homeViewModel != null)
                 {
                     await homeViewModel.TranslateToMarkDownTable();
+                }
+                else
+                {
+                    Console.WriteLine("警告: 无法获取HomeViewModel实例");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"执行热键操作失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 执行图片解释操作
+        /// 当检测到 E+I 组合键时调用
+        /// </summary>
+        private async void ExecuteExplainImageAction()
+        {
+            try
+            {
+                // 获取HomeViewModel单例实例
+                var homeViewModel = _container.Get<HomeViewModel>();
+                if (homeViewModel != null)
+                {
+                    await homeViewModel.ExplainImage();
                 }
                 else
                 {
