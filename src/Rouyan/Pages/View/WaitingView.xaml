@@ -1,0 +1,51 @@
+﻿<Window x:Class="Rouyan.Pages.View.WaitingView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:local="clr-namespace:Rouyan.Pages.View"
+        mc:Ignorable="d"
+        Title="WaitingWindow" 
+        Height="200" 
+        Width="350"
+        WindowStyle="ToolWindow"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Topmost="True">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <Border Grid.Row="0"
+                Background="{DynamicResource PrimaryHueMidBrush}"
+                Padding="16 8">
+            <TextBlock HorizontalAlignment="Center"
+                       Text="{Binding Text}"
+                       FontSize="16"/>
+        </Border>
+        
+        <!-- 进度条区域 -->
+        <StackPanel Grid.Row="1"
+                    Orientation="Vertical"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Margin="20">
+            
+            <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
+                         Foreground="{DynamicResource SecondaryHueMidBrush}"
+                         Width="60"
+                         Height="60"
+                         IsIndeterminate="True"/>
+                
+            <TextBlock Text="请稍候..."
+                       FontSize="14"
+                       HorizontalAlignment="Center"
+                       Foreground="{DynamicResource MaterialDesignBody}"
+                       Margin="0,10,0,0"/>
+                
+        </StackPanel>
+    </Grid>
+</Window>

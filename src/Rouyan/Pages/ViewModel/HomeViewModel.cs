@@ -3,9 +3,12 @@ using Microsoft.Extensions.AI;
 using OpenAI;
 using OpenAI.Chat;
 using OpenAI.Images;
+using Rouyan.Pages.ViewModel;
 using Stylet;
+using StyletIoC;
 using System;
 using System.ClientModel;
+using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -13,12 +16,28 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
+using IContainer = StyletIoC.IContainer;
 
 namespace Rouyan.Pages;
 
 public class HomeViewModel : Screen
 {
+    #region 构造函数
+
+    public HomeViewModel(INavigationController navigationController,IWindowManager windowManager,IContainer container)
+    {
+        this.navigationController = navigationController ?? throw new ArgumentNullException(nameof(navigationController));
+        this.windowManager = windowManager ?? throw new ArgumentNullException(nameof(windowManager));
+        this.container = container ?? throw new ArgumentNullException(nameof(container));
+    }
+
+    #endregion
+
+    #region 字段属性
+
     private readonly INavigationController navigationController;
+    private readonly IWindowManager windowManager;
+    private readonly IContainer container;
 
     private string _clipboardText = string.Empty;
     public string ClipboardText
@@ -33,11 +52,42 @@ public class HomeViewModel : Screen
             }
         }
     }
-    
+
+    private string _selectedFilePath = string.Empty;
+    public string SelectedFilePath
+    {
+        get => _selectedFilePath;
+        set
+        {
+            if (_selectedFilePath != value)
+            {
+                _selectedFilePath = value;
+                NotifyOfPropertyChange();
+            }
+        }
+    }
+
+    private BitmapSource? _clipboardImage;
+    public BitmapSource? ClipboardImage
+    {
+        get => _clipboardImage;
+        set
+        {
+            _clipboardImage = value;
+            NotifyOfPropertyChange();
+        }
+    }
+
+    #endregion
+
+    #region 方法
+
     public async Task TranslateToChinese()
     {
         try
         {
+            var waitingViewModel = container.Get<WaitingViewModel>();
+            windowManager.ShowWindow(waitingViewModel);
             // 获取剪切板文本 - 确保在UI线程上执行
             string clipboardText = string.Empty;
             await Application.Current.Dispatcher.InvokeAsync(() =>
@@ -94,13 +144,7 @@ public class HomeViewModel : Screen
                 try
                 {                
                     // 追加写入文件
-                    await File.AppendAllTextAsync(SelectedFilePath, response.Text + Environment.NewLine);
-                    
-                    // 在UI线程上显示消息
-                    await Application.Current.Dispatcher.InvokeAsync(() =>
-                    {
-                        MessageBox.Show($"翻译结果已添加到文件：{SelectedFilePath}", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
-                    });
+                    await File.AppendAllTextAsync(SelectedFilePath, response.Text + Environment.NewLine);                                      
                 }
                 catch (Exception ex)
                 {
@@ -117,6 +161,7 @@ public class HomeViewModel : Screen
                     MessageBox.Show("请先选择要写入的文件", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
                 });
             }
+            waitingViewModel.RequestClose();
         }
         catch (Exception ex)
         {
@@ -131,6 +176,8 @@ public class HomeViewModel : Screen
     {
         try
         {
+            var waitingViewModel = container.Get<WaitingViewModel>();
+            windowManager.ShowWindow(waitingViewModel);
             // 获取剪切板图片 - 确保在UI线程上执行
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
@@ -202,12 +249,7 @@ public class HomeViewModel : Screen
                 {
                     // 追加写入文件
                     await File.AppendAllTextAsync(SelectedFilePath, response.Text + Environment.NewLine);
-
-                    // 在UI线程上显示消息
-                    await Application.Current.Dispatcher.InvokeAsync(() =>
-                    {
-                        MessageBox.Show($"翻译结果已添加到文件：{SelectedFilePath}", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
-                    });
+                
                 }
                 catch (Exception ex)
                 {
@@ -224,6 +266,7 @@ public class HomeViewModel : Screen
                     MessageBox.Show("请先选择要写入的文件", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
                 });
             }
+            waitingViewModel.RequestClose();
         }
         catch (Exception ex)
         {
@@ -238,6 +281,8 @@ public class HomeViewModel : Screen
     {
         try
         {
+            var waitingViewModel = container.Get<WaitingViewModel>();
+            windowManager.ShowWindow(waitingViewModel);
             // 获取剪切板图片 - 确保在UI线程上执行
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
@@ -250,6 +295,7 @@ public class HomeViewModel : Screen
             });
             if (ClipboardImage == null)
             {
+                waitingViewModel.RequestClose();
                 MessageBox.Show("剪贴板中没有图片内容", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
@@ -302,13 +348,7 @@ public class HomeViewModel : Screen
                 try
                 {
                     // 追加写入文件
-                    await File.AppendAllTextAsync(SelectedFilePath, response.Text + Environment.NewLine);
-
-                    // 在UI线程上显示消息
-                    await Application.Current.Dispatcher.InvokeAsync(() =>
-                    {
-                        MessageBox.Show($"翻译结果已添加到文件：{SelectedFilePath}", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
-                    });
+                    await File.AppendAllTextAsync(SelectedFilePath, response.Text + Environment.NewLine);                 
                 }
                 catch (Exception ex)
                 {
@@ -325,6 +365,7 @@ public class HomeViewModel : Screen
                     MessageBox.Show("请先选择要写入的文件", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
                 });
             }
+            waitingViewModel.RequestClose();
         }
         catch (Exception ex)
         {
@@ -335,9 +376,15 @@ public class HomeViewModel : Screen
         }
     }
 
-    public void ExecuteTranslation()
+    public async Task Test()
     {
-        MessageBox.Show("翻译功能正在开发中...", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+        var waitingViewModel = container.Get<WaitingViewModel>();
+        windowManager.ShowWindow(waitingViewModel);
+        
+        // 5秒后自动关闭等待窗口
+        await Task.Delay(5000);
+
+        waitingViewModel.RequestClose();
     }
 
     public void SelectFile()
@@ -360,37 +407,7 @@ public class HomeViewModel : Screen
         {           
             MessageBox.Show($"选择文件失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
         }
-    }
-
-    private string _selectedFilePath = string.Empty;
-    public string SelectedFilePath
-    {
-        get => _selectedFilePath;
-        set
-        {
-            if (_selectedFilePath != value)
-            {
-                _selectedFilePath = value;
-                NotifyOfPropertyChange();
-            }
-        }
-    }
-    
-    private BitmapSource? _clipboardImage;
-    public BitmapSource? ClipboardImage
-    {
-        get => _clipboardImage;
-        set
-        {
-            _clipboardImage = value;
-            NotifyOfPropertyChange();
-        }
-    }
-
-    public HomeViewModel(INavigationController navigationController)
-    {
-        this.navigationController = navigationController ?? throw new ArgumentNullException(nameof(navigationController));
-    }
+    }    
 
     public void NavigateToAbout()
     {
@@ -482,4 +499,6 @@ public class HomeViewModel : Screen
             return ms.ToArray();
         }
     }
+
+    #endregion
 }
