@@ -12,6 +12,18 @@
                         <local:Bootstrapper />
                     </s:ApplicationLoader.Bootstrapper>
                 </s:ApplicationLoader>
+                
+                <!-- 设置中文字体，确保在MaterialDesign主题之前加载 -->
+                <ResourceDictionary>
+                    <FontFamily x:Key="ChineseFont">Microsoft YaHei, SimSun, 微软雅黑, 宋体, sans-serif</FontFamily>
+                    <Style TargetType="{x:Type TextBlock}">
+                        <Setter Property="FontFamily" Value="{StaticResource ChineseFont}" />
+                    </Style>
+                    <Style TargetType="{x:Type Control}">
+                        <Setter Property="FontFamily" Value="{StaticResource ChineseFont}" />
+                    </Style>
+                </ResourceDictionary>
+                
                 <materialDesign:BundledTheme BaseTheme="Light" PrimaryColor="DeepPurple" SecondaryColor="Lime" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign3.Defaults.xaml" />
             </ResourceDictionary.MergedDictionaries>

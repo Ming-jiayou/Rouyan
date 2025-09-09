@@ -376,6 +376,31 @@ public class HomeViewModel : Screen
         }
     }
 
+    public async Task Execute(string operation)
+    {
+        if (string.IsNullOrEmpty(operation))
+        {
+            MessageBox.Show("请先选择要执行的操作", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        switch (operation)
+        {
+            case "翻译文本":
+                await TranslateToChinese();
+                break;
+            case "翻译md表格":
+                await TranslateToMarkDownTable();
+                break;
+            case "解释图片":
+                await ExplainImage();
+                break;
+            default:
+                MessageBox.Show("无效的操作选择", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                break;
+        }
+    }
+
     public async Task Test()
     {
         var waitingViewModel = container.Get<WaitingViewModel>();

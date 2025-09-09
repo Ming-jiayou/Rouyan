@@ -57,14 +57,17 @@
         </StackPanel>
         <!-- 第二行 -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="选择操作：" Height="30" Margin="0,11,5,0"></TextBlock>
             <!-- 左侧选择框 -->
             <ComboBox Grid.Column="0"
+                      x:Name="OperationCombo"
                       Width="150"
                       Height="30"
                       Margin="5"
                       FontSize="14">
                 <ComboBoxItem Content="翻译文本"/>
                 <ComboBoxItem Content="翻译md表格"/>
+                <ComboBoxItem Content="解释图片"/>
             </ComboBox>
             
             <!-- 右侧执行按钮 -->
@@ -72,13 +75,14 @@
                     Content="执行"
                     Padding="15,5"
                     FontSize="14"
-                    Command="{s:Action ExecuteTranslation}"
+                    Command="{s:Action Execute}"
+                    CommandParameter="{Binding SelectedItem.Content, ElementName=OperationCombo}"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Margin="5"/>
         </StackPanel>
         <!-- 第三行 -->
-        <Grid Grid.Row="2" HorizontalAlignment="Center">
+        <Grid Grid.Row="2" Margin="10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
@@ -87,13 +91,12 @@
             <!-- 左侧：TextBox用于显示文字 -->
             <TextBox Grid.Column="0"
                          Text="{Binding ClipboardText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         Width="450"
-                         Height="450"
-                         Margin="0,0,10,0"
+                         Margin="0,0,5,0"
                          FontSize="14"
                          AcceptsReturn="True"
                          TextWrapping="Wrap"
                          VerticalScrollBarVisibility="Auto"
+                         HorizontalScrollBarVisibility="Auto"
                          BorderBrush="#FFABABAB"
                          BorderThickness="1"
                          Padding="10,5"/>
@@ -102,9 +105,7 @@
             <Border Grid.Column="1"
                         BorderBrush="#FFABABAB"
                         BorderThickness="1"
-                        Width="450"
-                        Height="450"
-                        Margin="10,0,0,0"
+                        Margin="5,0,0,0"
                         Background="#FFF8F8F8">
                 <Grid>
                     <!-- 背景提示文字 -->
@@ -118,7 +119,7 @@
                     <!-- 图片显示区 -->
                     <Image Source="{Binding ClipboardImage}"
                                Stretch="Uniform"
-                               StretchDirection="Both"
+                               StretchDirection="DownOnly"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"/>
                 </Grid>
