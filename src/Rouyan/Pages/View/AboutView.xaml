@@ -15,7 +15,7 @@
                        HorizontalAlignment="Center"
                        Margin="0,0,0,20"/>
             
-            <TextBlock Text="这是一个使用Stylet框架的WPF导航应用示例" 
+            <TextBlock Text="这是一个帮助你阅读英文文献的小工具" 
                        FontSize="18" 
                        HorizontalAlignment="Center"
                        TextWrapping="Wrap"
@@ -25,12 +25,58 @@
                        FontSize="16" 
                        HorizontalAlignment="Center"
                        Margin="0,0,0,20"/>
+                      
             
-            <TextBlock Text="开发: Rouyan Team" 
-                       FontSize="16" 
+            <TextBlock Text="快捷键说明："
+                       FontSize="18"
+                       FontWeight="Bold"
                        HorizontalAlignment="Center"
-                       Margin="0,0,0,30"/>
-            
+                       Margin="0,0,0,10"/>
+            <Grid Margin="0,0,0,10" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <!-- 第一行：文本翻译 -->
+                <TextBlock Grid.Column="0" Grid.Row="0"
+                    Text="T + C："
+                    FontSize="14"
+                    Margin="0,0,10,5"
+                    FontWeight="SemiBold"/>
+                <TextBlock Grid.Column="1" Grid.Row="0"
+                    Text="文本翻译"
+                    FontSize="14"
+                    Margin="0,0,0,5"/>
+
+                <!-- 第二行：表格翻译 -->
+                <TextBlock Grid.Column="0" Grid.Row="1"
+                    Text="M + D："
+                    FontSize="14"
+                    Margin="0,0,10,5"
+                    FontWeight="SemiBold"/>
+                <TextBlock Grid.Column="1" Grid.Row="1"
+                    Text="表格翻译"
+                    FontSize="14"
+                    Margin="0,0,0,5"/>
+
+                <!-- 第三行：图片解释 -->
+                <TextBlock Grid.Column="0" Grid.Row="2"
+                    Text="E + I："
+                    FontSize="14"
+                    Margin="0,0,10,5"
+                    FontWeight="SemiBold"/>
+                <TextBlock Grid.Column="1" Grid.Row="2"
+                    Text="图片解释"
+                    FontSize="14"
+                    Margin="0,0,0,5"/>
+            </Grid>
+                               
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <Button Content="🔙 返回首页" 
                         Padding="15,8"
