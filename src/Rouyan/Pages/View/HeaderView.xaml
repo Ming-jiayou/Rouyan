@@ -12,7 +12,7 @@
         <StackPanel>
             <!-- 应用标题 -->
             <Border Background="#1E3F7A" Height="60">
-                <TextBlock Text="Rouyan导航" 
+                <TextBlock Text="Rouyan" 
                            Foreground="White" 
                            FontSize="20" 
                            FontWeight="Bold"
