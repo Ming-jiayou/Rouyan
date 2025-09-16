@@ -126,9 +126,10 @@ public class HomeViewModel : Screen
                [
                    // Add a system message
                    new(ChatRole.System, """
-                   你是一个中文翻译助手，你可以将用户输入的中文翻译为英文。
-                   输入：你今天怎么样
-                   输出：How are you today?
+                   你是一个中文翻译助手，你可以将用户输入的英文翻译为中文。
+                   以下为示例：
+                   输入：How are you today?
+                   输出：你今天怎么样
                    """),
                 ];
 
