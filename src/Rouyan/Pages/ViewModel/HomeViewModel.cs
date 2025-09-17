@@ -122,6 +122,7 @@ public class HomeViewModel : Screen
             var ChatClient = new ChatClientBuilder(client)
                  .UseFunctionInvocation()
                  .Build();
+
             IList<Microsoft.Extensions.AI.ChatMessage> Messages =
                [
                    // Add a system message
@@ -267,10 +268,10 @@ public class HomeViewModel : Screen
             // 使用大语言模型翻译文本
             DotEnv.Load();
             var envVars = DotEnv.Read();
-            ApiKeyCredential apiKeyCredential = new ApiKeyCredential(envVars["OPENAI_API_KEY"]);
+            ApiKeyCredential apiKeyCredential = new ApiKeyCredential(envVars["OPENAI_VISION_API_KEY"]);
 
             OpenAIClientOptions openAIClientOptions = new OpenAIClientOptions();
-            openAIClientOptions.Endpoint = new Uri(envVars["OPENAI_BASE_URL"]);
+            openAIClientOptions.Endpoint = new Uri(envVars["OPENAI_VISION_BASE_URL"]);
 
             IChatClient client =
                            new OpenAI.Chat.ChatClient(envVars["OPENAI_VISION_MODEL"], apiKeyCredential, openAIClientOptions)
@@ -373,10 +374,10 @@ public class HomeViewModel : Screen
             // 使用大语言模型翻译文本
             DotEnv.Load();
             var envVars = DotEnv.Read();
-            ApiKeyCredential apiKeyCredential = new ApiKeyCredential(envVars["OPENAI_API_KEY"]);
+            ApiKeyCredential apiKeyCredential = new ApiKeyCredential(envVars["OPENAI_VISION_API_KEY"]);
 
             OpenAIClientOptions openAIClientOptions = new OpenAIClientOptions();
-            openAIClientOptions.Endpoint = new Uri(envVars["OPENAI_BASE_URL"]);
+            openAIClientOptions.Endpoint = new Uri(envVars["OPENAI_VISION_BASE_URL"]);
 
             IChatClient client =
                            new OpenAI.Chat.ChatClient(envVars["OPENAI_VISION_MODEL"], apiKeyCredential, openAIClientOptions)
@@ -473,71 +474,7 @@ public class HomeViewModel : Screen
 
     public async Task Test()
     {
-        try
-        {         
-            // 获取剪切板文本 - 确保在UI线程上执行
-            string clipboardText = string.Empty;
-            await Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                ClipboardText = string.Empty;
-                if (Clipboard.ContainsText())
-                {
-                    clipboardText = Clipboard.GetText();
-                    ClipboardText = clipboardText;
-                }
-            });
-
-            if (string.IsNullOrEmpty(clipboardText))
-            {
-                MessageBox.Show("剪贴板中没有文本内容", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            // 使用大语言模型翻译文本
-            DotEnv.Load();
-            var envVars = DotEnv.Read();
-            ApiKeyCredential apiKeyCredential = new ApiKeyCredential(envVars["OPENAI_API_KEY"]);
-
-            OpenAIClientOptions openAIClientOptions = new OpenAIClientOptions();
-            openAIClientOptions.Endpoint = new Uri(envVars["OPENAI_BASE_URL"]);
-
-            IChatClient client =
-                           new OpenAI.Chat.ChatClient(envVars["OPENAI_CHAT_MODEL"], apiKeyCredential, openAIClientOptions)
-                           .AsIChatClient();
-
-            // Note: To use the ChatClientBuilder you need to install the Microsoft.Extensions.AI package
-            var ChatClient = new ChatClientBuilder(client)
-                 .UseFunctionInvocation()
-                 .Build();
-            IList<Microsoft.Extensions.AI.ChatMessage> Messages =
-               [
-                   // Add a system message
-                   new(ChatRole.System, """
-                   你是一个中文翻译助手，你可以将用户输入的英文翻译为中文。
-                   以下为示例：
-                   输入：How are you today?
-                   输出：你今天怎么样
-                   """),
-                ];
-
-
-            Messages.Add(new(ChatRole.User, ClipboardText));
-
-            var vm = container.Get<ShowMessageViewModel>();
-            windowManager.ShowWindow(vm);
-
-            await foreach (var update in ChatClient.GetStreamingResponseAsync(Messages))
-            {
-                vm.Text+= update.Text;
-            }
-        }
-        catch (Exception ex)
-        {
-            await Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                MessageBox.Show($"执行操作时出错：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-            });
-        }
+            
     }
 
     public void SelectFile()
