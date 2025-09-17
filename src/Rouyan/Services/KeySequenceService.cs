@@ -40,6 +40,7 @@ namespace Rouyan.Services
         // 按键常量
         private const int VK_T = 0x54;
         private const int VK_C = 0x43;
+        private const int VK_S = 0x53;
         private const int VK_M = 0x4D;
         private const int VK_D = 0x44;
         private const int VK_E = 0x45;
@@ -56,6 +57,7 @@ namespace Rouyan.Services
         {
             None,
             WaitingForC,
+            WaitingForS,
             WaitingForD,
             WaitingForI
         }
@@ -65,6 +67,7 @@ namespace Rouyan.Services
         #region Fields
 
         private readonly Action _tCAction;
+        private readonly Action _tSAction;
         private readonly Action _mDAction;
         private readonly Action _eIAction;
         private IntPtr _hookID = IntPtr.Zero;
@@ -78,9 +81,10 @@ namespace Rouyan.Services
 
         #region Constructor & Initialization
 
-        public KeySequenceService(Window window, Action tcAction, Action mdAction, Action eiAction)
+        public KeySequenceService(Window window, Action tcAction, Action tsAction, Action mdAction, Action eiAction)
         {
             _tCAction = tcAction ?? throw new ArgumentNullException(nameof(tcAction));
+            _tSAction = tsAction ?? throw new ArgumentNullException(nameof(tsAction));
             _mDAction = mdAction ?? throw new ArgumentNullException(nameof(mdAction));
             _eIAction = eiAction ?? throw new ArgumentNullException(nameof(eiAction));
             _proc = HookCallback;
@@ -97,7 +101,7 @@ namespace Rouyan.Services
                 }
                 else
                 {
-                    Console.WriteLine("全局热键已注册：T+C (翻译), M+D (表格翻译), E+I (图片解释)");
+                    Console.WriteLine("全局热键已注册：T+C (翻译), T+S (流式翻译), M+D (表格翻译), E+I (图片解释)");
                 }
             }
             catch (Exception ex)
@@ -142,7 +146,7 @@ namespace Rouyan.Services
                     {
                         _currentMode = HotkeyMode.WaitingForC;
                         _sequenceStartTime = DateTime.Now;
-                        Console.WriteLine("检测到 T 键，等待按下 C 键...");
+                        Console.WriteLine("检测到 T 键，等待按下 C 键或 S 键...");
                     }
                     else if (vkCode == VK_M)
                     {
@@ -169,6 +173,18 @@ namespace Rouyan.Services
                         {
                             Console.WriteLine("检测到完整组合键 T+C，执行翻译操作...");
                             ExecuteTCAction();
+                        }
+                    }
+                    else if (vkCode == VK_S)
+                    {
+                        if (IsTimeout())
+                        {
+                            Console.WriteLine("按键序列 T+S 超时");
+                        }
+                        else
+                        {
+                            Console.WriteLine("检测到完整组合键 T+S，执行流式翻译操作...");
+                            ExecuteTSAction();
                         }
                     }
                     ResetState();
@@ -229,6 +245,11 @@ namespace Rouyan.Services
         private void ExecuteTCAction()
         {
             ExecuteAction(_tCAction);
+        }
+
+        private void ExecuteTSAction()
+        {
+            ExecuteAction(_tSAction);
         }
 
         private void ExecuteMDAction()

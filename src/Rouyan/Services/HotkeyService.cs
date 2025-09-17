@@ -31,6 +31,7 @@ namespace Rouyan.Services
                 _keySequenceService = new KeySequenceService(
                     mainWindow,
                     ExecuteTranslateAction,
+                    ExecuteTranslateStreamingAction,
                     ExecuteMarkdownTableAction,
                     ExecuteExplainImageAction);
                 _keySequenceService.RegisterHotKeys();
@@ -54,6 +55,31 @@ namespace Rouyan.Services
                 if (homeViewModel != null)
                 {
                     await homeViewModel.TranslateToChinese();
+                }
+                else
+                {
+                    Console.WriteLine("警告: 无法获取HomeViewModel实例");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"执行热键操作失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 执行流式翻译操作
+        /// 当检测到 T+S 组合键时调用
+        /// </summary>
+        private async void ExecuteTranslateStreamingAction()
+        {
+            try
+            {
+                // 获取HomeViewModel单例实例
+                var homeViewModel = _container.Get<HomeViewModel>();
+                if (homeViewModel != null)
+                {
+                    await homeViewModel.TranslateToChineseStreaming();
                 }
                 else
                 {
