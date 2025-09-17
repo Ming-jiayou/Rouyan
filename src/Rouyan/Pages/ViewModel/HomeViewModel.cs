@@ -404,13 +404,13 @@ public class HomeViewModel : Screen
 
     public async Task Test()
     {
-        var waitingViewModel = container.Get<WaitingViewModel>();
-        windowManager.ShowWindow(waitingViewModel);
+        var vm = container.Get<ShowMessageViewModel>();
+        windowManager.ShowWindow(vm);
         
         // 5秒后自动关闭等待窗口
         await Task.Delay(5000);
 
-        waitingViewModel.RequestClose();
+        vm.RequestClose();
     }
 
     public void SelectFile()
