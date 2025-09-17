@@ -12,15 +12,18 @@ public class Bootstrapper : Bootstrapper<ShellViewModel>
     {
         // 绑定导航控制器
         builder.Bind<NavigationController>().And<INavigationController>().To<NavigationController>().InSingletonScope();
-        
+
+        // 绑定环境配置服务
+        builder.Bind<IEnvConfigService>().To<EnvConfigService>().InSingletonScope();
+
         // 将HomeViewModel绑定为单例，这样状态会保持一致
         builder.Bind<HomeViewModel>().To<HomeViewModel>().InSingletonScope();
-        
+
         // 绑定页面ViewModel工厂
         builder.Bind<Func<HomeViewModel>>().ToFactory<Func<HomeViewModel>>(c => () => c.Get<HomeViewModel>());
         builder.Bind<Func<AboutViewModel>>().ToFactory<Func<AboutViewModel>>(c => () => c.Get<AboutViewModel>());
         builder.Bind<Func<SettingsViewModel>>().ToFactory<Func<SettingsViewModel>>(c => () => c.Get<SettingsViewModel>());
-        
+
         // 绑定全局快捷键服务为单例
         builder.Bind<HotkeyService>().To<HotkeyService>().InSingletonScope();
     }

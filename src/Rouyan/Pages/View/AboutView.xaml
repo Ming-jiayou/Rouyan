@@ -25,8 +25,14 @@
                        FontSize="16" 
                        HorizontalAlignment="Center"
                        Margin="0,0,0,20"/>
-                      
-            
+
+            <TextBlock Text="遇到任何问题或者任何意见，欢迎联系微信公众号：小铭同学的AI工具学习记录" 
+                       FontSize="16" 
+                       HorizontalAlignment="Center"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,30"/>
+
+
             <TextBlock Text="快捷键说明："
                        FontSize="18"
                        FontWeight="Bold"
