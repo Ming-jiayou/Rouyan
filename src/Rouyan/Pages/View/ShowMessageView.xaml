@@ -5,8 +5,17 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Rouyan.Pages.View"
         mc:Ignorable="d"
-        Title="ShowMessageView" Height="450" Width="800">
+        Title="{Binding Title}" Height="450" Width="800">
     <Grid>
-        
+        <TextBox Text="{Binding Text}" 
+                 IsReadOnly="True" 
+                 TextWrapping="Wrap" 
+                 HorizontalAlignment="Stretch"
+                 VerticalAlignment="Stretch"
+                 VerticalContentAlignment="Top"
+                 VerticalScrollBarVisibility="Auto" 
+                 HorizontalScrollBarVisibility="Auto"
+                 FontSize="14"
+                 Margin="10"/>
     </Grid>
 </Window>
