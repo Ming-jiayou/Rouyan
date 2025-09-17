@@ -21,8 +21,9 @@ public class Bootstrapper : Bootstrapper<ShellViewModel>
 
         // 绑定页面ViewModel工厂
         builder.Bind<Func<HomeViewModel>>().ToFactory<Func<HomeViewModel>>(c => () => c.Get<HomeViewModel>());
-        builder.Bind<Func<AboutViewModel>>().ToFactory<Func<AboutViewModel>>(c => () => c.Get<AboutViewModel>());
+        builder.Bind<Func<PromptManagementViewModel>>().ToFactory<Func<PromptManagementViewModel>>(c => () => c.Get<PromptManagementViewModel>());
         builder.Bind<Func<SettingsViewModel>>().ToFactory<Func<SettingsViewModel>>(c => () => c.Get<SettingsViewModel>());
+        builder.Bind<Func<AboutViewModel>>().ToFactory<Func<AboutViewModel>>(c => () => c.Get<AboutViewModel>());
 
         // 绑定全局快捷键服务为单例
         builder.Bind<HotkeyService>().To<HotkeyService>().InSingletonScope();

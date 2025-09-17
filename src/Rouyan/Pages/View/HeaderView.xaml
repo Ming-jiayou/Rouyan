@@ -22,7 +22,7 @@
             
             <!-- 导航菜单 -->
             <StackPanel Margin="0,20,0,0">
-                <Button Command="{s:Action NavigateToHome}" 
+                <Button Command="{s:Action NavigateToHome}"
                         Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
                         Height="45"
                         HorizontalContentAlignment="Left"
@@ -32,19 +32,20 @@
                         <TextBlock Text="首页" FontSize="14" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
-                
-                <Button Command="{s:Action NavigateToAbout}" 
+
+                <Button Command="{s:Action NavigateToPromptManagement}"
                         Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
                         Height="45"
                         HorizontalContentAlignment="Left"
                         Margin="0,1" Padding="20,8">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="ℹ️" FontSize="16" Margin="0,0,10,0"/>
-                        <TextBlock Text="关于" FontSize="14" VerticalAlignment="Center"/>
+                        <TextBlock Text="📝" FontSize="16" Margin="0,0,10,0"/>
+                        <TextBlock Text="提示词管理" FontSize="14" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
+                               
                 
-                <Button Command="{s:Action NavigateToSettings}" 
+                <Button Command="{s:Action NavigateToSettings}"
                         Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
                         Height="45"
                         HorizontalContentAlignment="Left"
@@ -52,6 +53,17 @@
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="⚙️" FontSize="16" Margin="0,0,10,0"/>
                         <TextBlock Text="设置" FontSize="14" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Command="{s:Action NavigateToAbout}"
+                        Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
+                        Height="45"
+                        HorizontalContentAlignment="Left"
+                        Margin="0,1" Padding="20,8">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="ℹ️" FontSize="16" Margin="0,0,10,0"/>
+                        <TextBlock Text="关于" FontSize="14" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
             </StackPanel>

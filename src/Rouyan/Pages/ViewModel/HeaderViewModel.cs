@@ -13,6 +13,7 @@ public class HeaderViewModel : Screen
     }
 
     public void NavigateToHome() => this.navigationController.NavigateToHome();
-    public void NavigateToAbout() => this.navigationController.NavigateToAbout();
+    public void NavigateToPromptManagement() => this.navigationController.NavigateToPromptManagement();
     public void NavigateToSettings() => this.navigationController.NavigateToSettings();
+    public void NavigateToAbout() => this.navigationController.NavigateToAbout();
 }
