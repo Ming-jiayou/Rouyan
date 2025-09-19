@@ -10,14 +10,28 @@
 
   <ItemGroup>
     <None Remove=".env" />
+    <None Remove="Prompts\LLMPrompts\02.txt" />
+    <None Remove="Prompts\VLMPrompts\01.txt" />
+    <None Remove="Prompts\VLMPrompts\02.txt" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="Prompts\LLMPrompts\01.txt" />
+    <EmbeddedResource Include="Prompts\LLMPrompts\01.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Prompts\LLMPrompts\02.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Prompts\VLMPrompts\01.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include=".env">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Prompts\VLMPrompts\02.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

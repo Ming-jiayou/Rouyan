@@ -1,16 +1,152 @@
 ﻿<UserControl x:Class="Rouyan.Pages.View.PromptManagementView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:Rouyan.Pages"
-             mc:Ignorable="d" 
+             mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <TextBlock Text="Prompt Management View" 
-                       FontSize="24" 
-                       FontWeight="Bold" 
-                       HorizontalAlignment="Center" 
-                       VerticalAlignment="Center"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <TextBlock Grid.Row="0"
+                   Text="提示词管理"
+                   FontSize="24"
+                   FontWeight="Bold"
+                   Margin="20,10,20,20"
+                   HorizontalAlignment="Center"/>
+
+        <!-- TabControl -->
+        <TabControl Grid.Row="1" Margin="20">
+            <!-- 当前使用的LLM提示词 -->
+            <TabItem Header="当前LLM提示词">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               Text="当前使用的LLM提示词："
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,10"/>
+
+                    <TextBox Grid.Row="1"
+                             Text="{Binding CurrentLLMPrompt, Mode=TwoWay}"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"
+                             VerticalScrollBarVisibility="Auto"
+                             IsReadOnly="True"
+                             Background="LightGray"/>
+                </Grid>
+            </TabItem>
+
+            <!-- LLM提示词列表 -->
+            <TabItem Header="LLM提示词库">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               Text="选择LLM提示词："
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,10"/>
+
+                    <ComboBox Grid.Row="1"
+                              ItemsSource="{Binding LLMPrompts}"
+                              SelectedItem="{Binding SelectedLLMPrompt, Mode=TwoWay}"
+                              DisplayMemberPath="Name"
+                              Margin="0,0,0,10"/>
+
+                    <TextBox Grid.Row="2"
+                             Text="{Binding SelectedLLMPrompt.Content, Mode=OneWay}"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"
+                             VerticalScrollBarVisibility="Auto"
+                             IsReadOnly="True"
+                             Background="LightGray"
+                             Margin="0,0,0,10"/>
+
+                    <Button Grid.Row="3"
+                            Content="使用此提示词"
+                            Command="{Binding SetCurrentLLMPromptCommand}"
+                            HorizontalAlignment="Right"
+                            Padding="15,5"/>
+                </Grid>
+            </TabItem>
+
+            <!-- 当前使用的VLM提示词 -->
+            <TabItem Header="当前VLM提示词">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               Text="当前使用的VLM提示词："
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,10"/>
+
+                    <TextBox Grid.Row="1"
+                             Text="{Binding CurrentVLMPrompt, Mode=TwoWay}"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"
+                             VerticalScrollBarVisibility="Auto"
+                             IsReadOnly="True"
+                             Background="LightGray"/>
+                </Grid>
+            </TabItem>
+
+            <!-- VLM提示词列表 -->
+            <TabItem Header="VLM提示词库">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               Text="选择VLM提示词："
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,10"/>
+
+                    <ComboBox Grid.Row="1"
+                              ItemsSource="{Binding VLMPrompts}"
+                              SelectedItem="{Binding SelectedVLMPrompt, Mode=TwoWay}"
+                              DisplayMemberPath="Name"
+                              Margin="0,0,0,10"/>
+
+                    <TextBox Grid.Row="2"
+                             Text="{Binding SelectedVLMPrompt.Content, Mode=OneWay}"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"
+                             VerticalScrollBarVisibility="Auto"
+                             IsReadOnly="True"
+                             Background="LightGray"
+                             Margin="0,0,0,10"/>
+
+                    <Button Grid.Row="3"
+                            Content="使用此提示词"
+                            Command="{Binding SetCurrentVLMPromptCommand}"
+                            HorizontalAlignment="Right"
+                            Padding="15,5"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </UserControl>
