@@ -4,7 +4,7 @@ using System.Windows;
 using Stylet;
 using Rouyan.Services;
 
-namespace Rouyan.Pages;
+namespace Rouyan.Pages.ViewModel;
 
 public class SettingsViewModel : Screen
 {   

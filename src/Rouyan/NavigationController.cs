@@ -1,6 +1,7 @@
 using System;
 using Rouyan.Pages;
 using Stylet;
+using Rouyan.Pages.ViewModel;
 
 namespace Rouyan;
 

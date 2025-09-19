@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Rouyan.Pages
+namespace Rouyan.Pages.View
 {
     /// <summary>
     /// PromptManagementView.xaml 的交互逻辑

@@ -1,4 +1,4 @@
-<UserControl x:Class="Rouyan.Pages.AboutView"
+<UserControl x:Class="Rouyan.Pages.View.AboutView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -87,11 +87,13 @@
                 <Button Content="🔙 返回首页" 
                         Padding="15,8"
                         Margin="0,0,10,0"
+                        Height="35"
                         Command="{s:Action NavigateToHome}"/>
                         
                 <Button Content="⚙️ 设置" 
                         Padding="15,8"
                         Margin="10,0,0,0"
+                        Height="35"
                         Command="{s:Action NavigateToSettings}"/>
             </StackPanel>
         </StackPanel>

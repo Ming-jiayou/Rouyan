@@ -1,7 +1,7 @@
 using System;
 using Stylet;
 
-namespace Rouyan.Pages;
+namespace Rouyan.Pages.ViewModel;
 
 public class ShellViewModel : Conductor<IScreen>, INavigationControllerDelegate
 {

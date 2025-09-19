@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using StyletIoC;
 using Rouyan.Pages;
 using System.Windows;
+using Rouyan.Pages.ViewModel;
 
 namespace Rouyan.Services
 {

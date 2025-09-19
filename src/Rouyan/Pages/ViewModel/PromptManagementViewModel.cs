@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rouyan.Pages
+namespace Rouyan.Pages.ViewModel
 {
     public class PromptManagementViewModel : Screen
     {

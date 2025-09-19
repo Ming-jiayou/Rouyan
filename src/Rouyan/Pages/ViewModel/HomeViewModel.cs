@@ -18,7 +18,7 @@ using System.Windows.Media.Imaging;
 using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
 using IContainer = StyletIoC.IContainer;
 
-namespace Rouyan.Pages;
+namespace Rouyan.Pages.ViewModel;
 
 public class HomeViewModel : Screen
 {
