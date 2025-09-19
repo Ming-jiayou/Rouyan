@@ -13,6 +13,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="Prompts\LLMPrompts\01.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include=".env">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
