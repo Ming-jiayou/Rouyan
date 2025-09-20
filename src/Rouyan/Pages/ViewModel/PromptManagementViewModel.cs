@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Rouyan.Services;
+using System.Windows;
 
 namespace Rouyan.Pages.ViewModel
 {
@@ -21,10 +22,7 @@ namespace Rouyan.Pages.ViewModel
 
         public PromptManagementViewModel(PromptManagementService promptService)
         {
-            _promptService = promptService;
-
-            SetCurrentLLMPromptCommand = new ActionCommand(SetCurrentLLMPrompt, CanSetCurrentLLMPrompt);
-            SetCurrentVLMPromptCommand = new ActionCommand(SetCurrentVLMPrompt, CanSetCurrentVLMPrompt);
+            _promptService = promptService;           
         }
 
         public string CurrentLLMPrompt
@@ -47,8 +45,7 @@ namespace Rouyan.Pages.ViewModel
             get => _selectedLLMPrompt;
             set
             {
-                SetAndNotify(ref _selectedLLMPrompt, value);
-                (SetCurrentLLMPromptCommand as ActionCommand)?.RaiseCanExecuteChanged();
+                SetAndNotify(ref _selectedLLMPrompt, value);              
             }
         }
 
@@ -57,14 +54,10 @@ namespace Rouyan.Pages.ViewModel
             get => _selectedVLMPrompt;
             set
             {
-                SetAndNotify(ref _selectedVLMPrompt, value);
-                (SetCurrentVLMPromptCommand as ActionCommand)?.RaiseCanExecuteChanged();
+                SetAndNotify(ref _selectedVLMPrompt, value);             
             }
         }
-
-        public ICommand SetCurrentLLMPromptCommand { get; }
-        public ICommand SetCurrentVLMPromptCommand { get; }
-
+  
         protected override async void OnInitialActivate()
         {
             base.OnInitialActivate();
@@ -97,61 +90,24 @@ namespace Rouyan.Pages.ViewModel
             }
         }
 
-        private void SetCurrentLLMPrompt()
+        public void SetCurrentLLMPrompt()
         {
             if (SelectedLLMPrompt != null)
             {
                 _promptService.SetCurrentLLMPrompt(SelectedLLMPrompt);
                 CurrentLLMPrompt = _promptService.CurrentLLMPrompt;
+                MessageBox.Show("设置当前LLM提示词成功！！");
             }
         }
 
-        private bool CanSetCurrentLLMPrompt()
-        {
-            return SelectedLLMPrompt != null;
-        }
-
-        private void SetCurrentVLMPrompt()
+        public void SetCurrentVLMPrompt()
         {
             if (SelectedVLMPrompt != null)
             {
                 _promptService.SetCurrentVLMPrompt(SelectedVLMPrompt);
                 CurrentVLMPrompt = _promptService.CurrentVLMPrompt;
+                MessageBox.Show("设置当前VLM提示词成功！！");
             }
-        }
-
-        private bool CanSetCurrentVLMPrompt()
-        {
-            return SelectedVLMPrompt != null;
-        }
-    }
-
-    public class ActionCommand : ICommand
-    {
-        private readonly Action _execute;
-        private readonly Func<bool>? _canExecute;
-
-        public ActionCommand(Action execute, Func<bool>? canExecute = null)
-        {
-            _execute = execute ?? throw new ArgumentNullException(nameof(execute));
-            _canExecute = canExecute;
-        }
-
-        public event EventHandler? CanExecuteChanged;
-
-        public bool CanExecute(object? parameter)
-        {
-            return _canExecute?.Invoke() ?? true;
-        }
-
-        public void Execute(object? parameter)
-        {
-            _execute.Invoke();
-        }
-
-        public void RaiseCanExecuteChanged()
-        {
-            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
-        }
-    }
+        }    
+    } 
 }
