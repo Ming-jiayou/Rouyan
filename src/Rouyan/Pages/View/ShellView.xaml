@@ -5,12 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Rouyan.Pages.View"
         xmlns:vm="clr-namespace:Rouyan.Pages.ViewModel"
+        xmlns:tb="http://www.hardcodet.net/taskbar"
         mc:Ignorable="d"
         Title="Rouyan" Height="800" Width="1200"
-        Icon="/Assets/福州肉燕.png"
+        Icon="/Assets/福州肉燕.ico"
         xmlns:s="https://github.com/canton7/Stylet"
         Style="{StaticResource MaterialDesignWindow}"
-        d:DataContext="{d:DesignInstance local:ShellViewModel}">
+        StateChanged="Window_StateChanged"
+        d:DataContext="{d:DesignInstance vm:ShellViewModel}">
     <Grid>
         <Grid.ColumnDefinitions>
             <!-- 左侧导航菜单 -->
@@ -29,5 +31,19 @@
                       VerticalScrollBarVisibility="Auto">
             <ContentControl s:View.Model="{Binding ActiveItem}"/>
         </ScrollViewer>
+
+        <!-- 系统托盘图标 -->
+        <tb:TaskbarIcon x:Name="TrayIcon"
+                 IconSource="/Assets/福州肉燕.ico"
+                 ToolTipText="Rouyan"
+                 TrayLeftMouseDown="TrayIcon_TrayLeftMouseDown">
+            <tb:TaskbarIcon.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="显示窗口" Click="ShowWindow_Click"/>
+                    <Separator/>
+                    <MenuItem Header="退出" Click="ExitApp_Click"/>
+                </ContextMenu>
+            </tb:TaskbarIcon.ContextMenu>
+        </tb:TaskbarIcon>
     </Grid>
 </Window>
