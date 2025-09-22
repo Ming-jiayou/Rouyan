@@ -4,6 +4,7 @@ using Rouyan.Pages;
 using Rouyan.Services;
 using System.Windows;
 using Rouyan.Pages.ViewModel;
+using Rouyan.Interfaces;
 
 namespace Rouyan;
 
@@ -16,6 +17,9 @@ public class Bootstrapper : Bootstrapper<ShellViewModel>
 
         // 绑定环境配置服务
         builder.Bind<IEnvConfigService>().To<EnvConfigService>().InSingletonScope();
+
+        // 绑定提示词管理服务
+        builder.Bind<IPromptManagementService>().To<PromptManagementService>().InSingletonScope();
 
         // 将HomeViewModel绑定为单例，这样状态会保持一致
         builder.Bind<HomeViewModel>().To<HomeViewModel>().InSingletonScope();

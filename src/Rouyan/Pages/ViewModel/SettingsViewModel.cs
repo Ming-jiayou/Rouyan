@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using Stylet;
 using Rouyan.Services;
+using Rouyan.Interfaces;
+using Rouyan.Models;
 
 namespace Rouyan.Pages.ViewModel;
 

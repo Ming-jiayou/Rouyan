@@ -4,6 +4,7 @@ using OpenAI;
 using OpenAI.Chat;
 using OpenAI.Images;
 using Rouyan.Pages.ViewModel;
+using Rouyan.Services;
 using Stylet;
 using StyletIoC;
 using System;
@@ -29,6 +30,7 @@ public class HomeViewModel : Screen
         this.navigationController = navigationController ?? throw new ArgumentNullException(nameof(navigationController));
         this.windowManager = windowManager ?? throw new ArgumentNullException(nameof(windowManager));
         this.container = container ?? throw new ArgumentNullException(nameof(container));
+        this.promptService = container.Get<PromptManagementService>();
     }
 
     #endregion
@@ -38,6 +40,7 @@ public class HomeViewModel : Screen
     private readonly INavigationController navigationController;
     private readonly IWindowManager windowManager;
     private readonly IContainer container;
+    private readonly PromptManagementService promptService;
 
     private string _clipboardText = string.Empty;
     public string ClipboardText
@@ -82,7 +85,7 @@ public class HomeViewModel : Screen
 
     #region 方法
 
-    public async Task TranslateToChinese()
+    public async Task RunLLMPrompt1 ()
     {
         try
         {
@@ -123,15 +126,12 @@ public class HomeViewModel : Screen
                  .UseFunctionInvocation()
                  .Build();
 
+            var LLMPrompt1 = promptService.CurrentLLMPrompt1;
+
             IList<Microsoft.Extensions.AI.ChatMessage> Messages =
                [
                    // Add a system message
-                   new(ChatRole.System, """
-                   你是一个中文翻译助手，你可以将用户输入的英文翻译为中文。
-                   以下为示例：
-                   输入：How are you today?
-                   输出：你今天怎么样
-                   """),
+                   new(ChatRole.System, $"{LLMPrompt1}"),
                 ];
 
 
@@ -174,7 +174,7 @@ public class HomeViewModel : Screen
         }
     }
 
-    public async Task TranslateToChineseStreaming()
+    public async Task RunLLMPrompt1Streaming()
     {
         try
         {
@@ -212,15 +212,169 @@ public class HomeViewModel : Screen
             var ChatClient = new ChatClientBuilder(client)
                  .UseFunctionInvocation()
                  .Build();
+
+            var LLMPrompt1 = promptService.CurrentLLMPrompt1;
+
             IList<Microsoft.Extensions.AI.ChatMessage> Messages =
                [
                    // Add a system message
-                   new(ChatRole.System, """
-                   你是一个中文翻译助手，你可以将用户输入的英文翻译为中文。
-                   以下为示例：
-                   输入：How are you today?
-                   输出：你今天怎么样
-                   """),
+                   new(ChatRole.System, $"{LLMPrompt1}"),
+                ];
+
+
+            Messages.Add(new(ChatRole.User, ClipboardText));
+
+            var vm = container.Get<ShowMessageViewModel>();
+            windowManager.ShowWindow(vm);
+
+            await foreach (var update in ChatClient.GetStreamingResponseAsync(Messages))
+            {
+                vm.Text += update.Text;
+            }
+        }
+        catch (Exception ex)
+        {
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                MessageBox.Show($"执行操作时出错：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            });
+        }
+    }
+
+    public async Task RunLLMPrompt2()
+    {
+        try
+        {
+            var waitingViewModel = container.Get<WaitingViewModel>();
+            windowManager.ShowWindow(waitingViewModel);
+            // 获取剪切板文本 - 确保在UI线程上执行
+            string clipboardText = string.Empty;
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                ClipboardText = string.Empty;
+                if (Clipboard.ContainsText())
+                {
+                    clipboardText = Clipboard.GetText();
+                    ClipboardText = clipboardText;
+                }
+            });
+
+            if (string.IsNullOrEmpty(clipboardText))
+            {
+                MessageBox.Show("剪贴板中没有文本内容", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // 使用大语言模型翻译文本
+            DotEnv.Load();
+            var envVars = DotEnv.Read();
+            ApiKeyCredential apiKeyCredential = new ApiKeyCredential(envVars["OPENAI_API_KEY"]);
+
+            OpenAIClientOptions openAIClientOptions = new OpenAIClientOptions();
+            openAIClientOptions.Endpoint = new Uri(envVars["OPENAI_BASE_URL"]);
+
+            IChatClient client =
+                           new OpenAI.Chat.ChatClient(envVars["OPENAI_CHAT_MODEL"], apiKeyCredential, openAIClientOptions)
+                           .AsIChatClient();
+
+            // Note: To use the ChatClientBuilder you need to install the Microsoft.Extensions.AI package
+            var ChatClient = new ChatClientBuilder(client)
+                 .UseFunctionInvocation()
+                 .Build();
+
+            var LLMPrompt2 = promptService.CurrentLLMPrompt2;
+
+            IList<Microsoft.Extensions.AI.ChatMessage> Messages =
+               [
+                   // Add a system message
+                   new(ChatRole.System, $"{LLMPrompt2}"),
+                ];
+
+
+            Messages.Add(new(ChatRole.User, ClipboardText));
+
+
+            var response = await ChatClient.GetResponseAsync(Messages);
+
+            // 添加到选择的文件中
+            if (!string.IsNullOrEmpty(SelectedFilePath))
+            {
+                try
+                {
+                    // 追加写入文件
+                    await File.AppendAllTextAsync(SelectedFilePath, response.Text + Environment.NewLine);
+                }
+                catch (Exception ex)
+                {
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        MessageBox.Show($"写入文件失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    });
+                }
+            }
+            else
+            {
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    MessageBox.Show("请先选择要写入的文件", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                });
+            }
+            waitingViewModel.RequestClose();
+        }
+        catch (Exception ex)
+        {
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                MessageBox.Show($"执行操作时出错：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            });
+        }
+    }
+
+    public async Task RunLLMPrompt2Streaming()
+    {
+        try
+        {
+            // 获取剪切板文本 - 确保在UI线程上执行
+            string clipboardText = string.Empty;
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                ClipboardText = string.Empty;
+                if (Clipboard.ContainsText())
+                {
+                    clipboardText = Clipboard.GetText();
+                    ClipboardText = clipboardText;
+                }
+            });
+
+            if (string.IsNullOrEmpty(clipboardText))
+            {
+                MessageBox.Show("剪贴板中没有文本内容", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // 使用大语言模型翻译文本
+            DotEnv.Load();
+            var envVars = DotEnv.Read();
+            ApiKeyCredential apiKeyCredential = new ApiKeyCredential(envVars["OPENAI_API_KEY"]);
+
+            OpenAIClientOptions openAIClientOptions = new OpenAIClientOptions();
+            openAIClientOptions.Endpoint = new Uri(envVars["OPENAI_BASE_URL"]);
+
+            IChatClient client =
+                           new OpenAI.Chat.ChatClient(envVars["OPENAI_CHAT_MODEL"], apiKeyCredential, openAIClientOptions)
+                           .AsIChatClient();
+
+            // Note: To use the ChatClientBuilder you need to install the Microsoft.Extensions.AI package
+            var ChatClient = new ChatClientBuilder(client)
+                 .UseFunctionInvocation()
+                 .Build();
+
+            var LLMPrompt2 = promptService.CurrentLLMPrompt2;
+
+            IList<Microsoft.Extensions.AI.ChatMessage> Messages =
+               [
+                   // Add a system message
+                   new(ChatRole.System, $"{LLMPrompt2}"),
                 ];
 
 
@@ -437,6 +591,339 @@ public class HomeViewModel : Screen
                 });
             }
             waitingViewModel.RequestClose();
+        }
+        catch (Exception ex)
+        {
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                MessageBox.Show($"执行操作时出错：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            });
+        }
+    }
+
+    public async Task RunVLMPrompt1()
+    {
+        try
+        {
+            var waitingViewModel = container.Get<WaitingViewModel>();
+            windowManager.ShowWindow(waitingViewModel);
+            // 获取剪切板图片 - 确保在UI线程上执行
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                ClipboardImage = null;
+                if (Clipboard.ContainsImage())
+                {
+                    var image = Clipboard.GetImage();
+                    ClipboardImage = image;
+                }
+            });
+            if (ClipboardImage == null)
+            {
+                waitingViewModel.RequestClose();
+                MessageBox.Show("剪贴板中没有图片内容", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // 使用大语言模型翻译文本
+            DotEnv.Load();
+            var envVars = DotEnv.Read();
+            ApiKeyCredential apiKeyCredential = new ApiKeyCredential(envVars["OPENAI_VISION_API_KEY"]);
+
+            OpenAIClientOptions openAIClientOptions = new OpenAIClientOptions();
+            openAIClientOptions.Endpoint = new Uri(envVars["OPENAI_VISION_BASE_URL"]);
+
+            IChatClient client =
+                           new OpenAI.Chat.ChatClient(envVars["OPENAI_VISION_MODEL"], apiKeyCredential, openAIClientOptions)
+                           .AsIChatClient();
+
+            // Note: To use the ChatClientBuilder you need to install the Microsoft.Extensions.AI package
+            var ChatClient = new ChatClientBuilder(client)
+                 .UseFunctionInvocation()
+                 .Build();
+
+            var VLMPrompt1 = promptService.CurrentVLMPrompt1;
+
+            IList<Microsoft.Extensions.AI.ChatMessage> Messages =
+               [
+                   // Add a system message
+                   new(ChatRole.System, $"{VLMPrompt1}"),
+                ];
+
+
+
+            var message = new ChatMessage();
+
+            // 在UI线程中将剪贴板图片转换为byte[]
+            byte[] data = await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                return BitmapSourceToByteArray(ClipboardImage);
+            });
+            message.Contents.Add(new DataContent(data, "image/jpeg"));
+            Messages.Add(message);
+
+            var response = await ChatClient.GetResponseAsync(Messages);
+
+            // 添加到选择的文件中
+            if (!string.IsNullOrEmpty(SelectedFilePath))
+            {
+                try
+                {
+                    // 追加写入文件
+                    await File.AppendAllTextAsync(SelectedFilePath, response.Text + Environment.NewLine);
+                }
+                catch (Exception ex)
+                {
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        MessageBox.Show($"写入文件失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    });
+                }
+            }
+            else
+            {
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    MessageBox.Show("请先选择要写入的文件", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                });
+            }
+            waitingViewModel.RequestClose();
+        }
+        catch (Exception ex)
+        {
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                MessageBox.Show($"执行操作时出错：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            });
+        }
+    }
+
+    public async Task RunVLMPrompt1Streaming()
+    {
+        try
+        {       
+            // 获取剪切板图片 - 确保在UI线程上执行
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                ClipboardImage = null;
+                if (Clipboard.ContainsImage())
+                {
+                    var image = Clipboard.GetImage();
+                    ClipboardImage = image;
+                }
+            });
+            if (ClipboardImage == null)
+            {
+                MessageBox.Show("剪贴板中没有图片内容", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // 使用大语言模型翻译文本
+            DotEnv.Load();
+            var envVars = DotEnv.Read();
+            ApiKeyCredential apiKeyCredential = new ApiKeyCredential(envVars["OPENAI_VISION_API_KEY"]);
+
+            OpenAIClientOptions openAIClientOptions = new OpenAIClientOptions();
+            openAIClientOptions.Endpoint = new Uri(envVars["OPENAI_VISION_BASE_URL"]);
+
+            IChatClient client =
+                           new OpenAI.Chat.ChatClient(envVars["OPENAI_VISION_MODEL"], apiKeyCredential, openAIClientOptions)
+                           .AsIChatClient();
+
+            // Note: To use the ChatClientBuilder you need to install the Microsoft.Extensions.AI package
+            var ChatClient = new ChatClientBuilder(client)
+                 .UseFunctionInvocation()
+                 .Build();
+            var VLMPrompt1 = promptService.CurrentVLMPrompt1;
+
+            IList<Microsoft.Extensions.AI.ChatMessage> Messages =
+               [
+                   // Add a system message
+                   new(ChatRole.System, $"{VLMPrompt1}"),
+                ];
+
+            var message = new ChatMessage();
+
+            // 在UI线程中将剪贴板图片转换为byte[]
+            byte[] data = await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                return BitmapSourceToByteArray(ClipboardImage);
+            });
+            message.Contents.Add(new DataContent(data, "image/jpeg"));
+            Messages.Add(message);
+
+            var vm = container.Get<ShowMessageViewModel>();
+            windowManager.ShowWindow(vm);
+
+            await foreach (var update in ChatClient.GetStreamingResponseAsync(Messages))
+            {
+                vm.Text += update.Text;
+            }           
+        }
+        catch (Exception ex)
+        {
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                MessageBox.Show($"执行操作时出错：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            });
+        }
+    }
+
+    public async Task RunVLMPrompt2()
+    {
+        try
+        {
+            var waitingViewModel = container.Get<WaitingViewModel>();
+            windowManager.ShowWindow(waitingViewModel);
+            // 获取剪切板图片 - 确保在UI线程上执行
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                ClipboardImage = null;
+                if (Clipboard.ContainsImage())
+                {
+                    var image = Clipboard.GetImage();
+                    ClipboardImage = image;
+                }
+            });
+            if (ClipboardImage == null)
+            {
+                waitingViewModel.RequestClose();
+                MessageBox.Show("剪贴板中没有图片内容", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // 使用大语言模型翻译文本
+            DotEnv.Load();
+            var envVars = DotEnv.Read();
+            ApiKeyCredential apiKeyCredential = new ApiKeyCredential(envVars["OPENAI_VISION_API_KEY"]);
+
+            OpenAIClientOptions openAIClientOptions = new OpenAIClientOptions();
+            openAIClientOptions.Endpoint = new Uri(envVars["OPENAI_VISION_BASE_URL"]);
+
+            IChatClient client =
+                           new OpenAI.Chat.ChatClient(envVars["OPENAI_VISION_MODEL"], apiKeyCredential, openAIClientOptions)
+                           .AsIChatClient();
+
+            // Note: To use the ChatClientBuilder you need to install the Microsoft.Extensions.AI package
+            var ChatClient = new ChatClientBuilder(client)
+                 .UseFunctionInvocation()
+                 .Build();
+            var VLMPrompt2 = promptService.CurrentVLMPrompt2;
+
+            IList<Microsoft.Extensions.AI.ChatMessage> Messages =
+               [
+                   // Add a system message
+                   new(ChatRole.System, $"{VLMPrompt2}"),
+                ];
+
+
+
+            var message = new ChatMessage();
+
+            // 在UI线程中将剪贴板图片转换为byte[]
+            byte[] data = await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                return BitmapSourceToByteArray(ClipboardImage);
+            });
+            message.Contents.Add(new DataContent(data, "image/jpeg"));
+            Messages.Add(message);
+
+            var response = await ChatClient.GetResponseAsync(Messages);
+
+            // 添加到选择的文件中
+            if (!string.IsNullOrEmpty(SelectedFilePath))
+            {
+                try
+                {
+                    // 追加写入文件
+                    await File.AppendAllTextAsync(SelectedFilePath, response.Text + Environment.NewLine);
+                }
+                catch (Exception ex)
+                {
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        MessageBox.Show($"写入文件失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    });
+                }
+            }
+            else
+            {
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    MessageBox.Show("请先选择要写入的文件", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                });
+            }
+            waitingViewModel.RequestClose();
+        }
+        catch (Exception ex)
+        {
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                MessageBox.Show($"执行操作时出错：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            });
+        }
+    }
+
+    public async Task RunVLMPrompt2Streaming()
+    {
+        try
+        {
+            // 获取剪切板图片 - 确保在UI线程上执行
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                ClipboardImage = null;
+                if (Clipboard.ContainsImage())
+                {
+                    var image = Clipboard.GetImage();
+                    ClipboardImage = image;
+                }
+            });
+            if (ClipboardImage == null)
+            {
+                MessageBox.Show("剪贴板中没有图片内容", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // 使用大语言模型翻译文本
+            DotEnv.Load();
+            var envVars = DotEnv.Read();
+            ApiKeyCredential apiKeyCredential = new ApiKeyCredential(envVars["OPENAI_VISION_API_KEY"]);
+
+            OpenAIClientOptions openAIClientOptions = new OpenAIClientOptions();
+            openAIClientOptions.Endpoint = new Uri(envVars["OPENAI_VISION_BASE_URL"]);
+
+            IChatClient client =
+                           new OpenAI.Chat.ChatClient(envVars["OPENAI_VISION_MODEL"], apiKeyCredential, openAIClientOptions)
+                           .AsIChatClient();
+
+            // Note: To use the ChatClientBuilder you need to install the Microsoft.Extensions.AI package
+            var ChatClient = new ChatClientBuilder(client)
+                 .UseFunctionInvocation()
+                 .Build();
+            var VLMPrompt2 = promptService.CurrentVLMPrompt2;
+
+            IList<Microsoft.Extensions.AI.ChatMessage> Messages =
+               [
+                   // Add a system message
+                   new(ChatRole.System, $"{VLMPrompt2}"),
+                ];
+
+            var message = new ChatMessage();
+
+            // 在UI线程中将剪贴板图片转换为byte[]
+            byte[] data = await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                return BitmapSourceToByteArray(ClipboardImage);
+            });
+            message.Contents.Add(new DataContent(data, "image/jpeg"));
+            Messages.Add(message);
+
+            var vm = container.Get<ShowMessageViewModel>();
+            windowManager.ShowWindow(vm);
+
+            await foreach (var update in ChatClient.GetStreamingResponseAsync(Messages))
+            {
+                vm.Text += update.Text;
+            }
         }
         catch (Exception ex)
         {
