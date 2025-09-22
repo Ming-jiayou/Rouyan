@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Rouyan.Interfaces;
+using Rouyan.Models;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -8,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Rouyan.Services
 {
-    public class PromptManagementService
+    public class PromptManagementService : IPromptManagementService
     {
         private readonly string _baseDirectory;
         private readonly string _llmPromptsDirectory;
@@ -37,7 +39,7 @@ namespace Rouyan.Services
             await LoadConfigAsync();
         }
 
-        private async Task LoadConfigAsync()
+        public async Task LoadConfigAsync()
         {
             try
             {
@@ -263,12 +265,5 @@ namespace Rouyan.Services
                 Console.WriteLine($"Error saving config: {ex.Message}");
             }
         }
-    }
-
-    public class PromptItem
-    {
-        public string Name { get; set; } = string.Empty;
-        public string Content { get; set; } = string.Empty;
-        public string FilePath { get; set; } = string.Empty;
     }
 }

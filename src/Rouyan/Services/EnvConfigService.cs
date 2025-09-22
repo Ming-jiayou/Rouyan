@@ -1,26 +1,11 @@
+using Rouyan.Interfaces;
+using Rouyan.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
 namespace Rouyan.Services;
-
-public interface IEnvConfigService
-{
-    Task<EnvConfig> LoadConfigAsync();
-    Task SaveConfigAsync(EnvConfig config);
-}
-
-public class EnvConfig
-{
-    public string ChatApiKey { get; set; } = "";
-    public string ChatBaseUrl { get; set; } = "";
-    public string ChatModel { get; set; } = "";
-
-    public string VisionApiKey { get; set; } = "";
-    public string VisionBaseUrl { get; set; } = "";
-    public string VisionModel { get; set; } = "";
-}
 
 public class EnvConfigService : IEnvConfigService
 {
