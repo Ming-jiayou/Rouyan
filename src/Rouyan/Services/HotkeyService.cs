@@ -9,7 +9,7 @@ namespace Rouyan.Services
 {
     /// <summary>
     /// 全局热键服务管理器
-    /// 负责初始化和管理多种热键组合：T+C (文本翻译)、M+D (表格翻译) 和 E+I (图片解释)
+    /// 负责初始化和管理Tab+字母热键组合
     /// </summary>
     public class HotkeyService : IDisposable
     {
@@ -30,11 +30,14 @@ namespace Rouyan.Services
             try
             {
                 _keySequenceService = new KeySequenceService(
-                    mainWindow,
-                    ExecuteTranslateAction,
-                    ExecuteTranslateStreamingAction,
-                    ExecuteMarkdownTableAction,
-                    ExecuteExplainImageAction);
+                    ExecuteRunLLMPrompt1,
+                    ExecuteRunLLMPrompt1Streaming,
+                    ExecuteRunLLMPrompt2,
+                    ExecuteRunLLMPrompt2Streaming,
+                    ExecuteRunVLMPrompt1,
+                    ExecuteRunVLMPrompt1Streaming,
+                    ExecuteRunVLMPrompt2,
+                    ExecuteRunVLMPrompt2Streaming);
                 _keySequenceService.RegisterHotKeys();
             }
             catch (Exception ex)
@@ -44,18 +47,17 @@ namespace Rouyan.Services
         }
 
         /// <summary>
-        /// 执行翻译操作
-        /// 当检测到 T+C 组合键时调用
+        /// 执行RunLLMPrompt1操作
+        /// 当检测到 Tab+K 组合键时调用
         /// </summary>
-        private async void ExecuteTranslateAction()
+        private async void ExecuteRunLLMPrompt1()
         {
             try
             {
-                // 获取HomeViewModel单例实例
                 var homeViewModel = _container.Get<HomeViewModel>();
                 if (homeViewModel != null)
                 {
-                    await homeViewModel.TranslateToChinese();
+                    await homeViewModel.RunLLMPrompt1();
                 }
                 else
                 {
@@ -64,23 +66,22 @@ namespace Rouyan.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"执行热键操作失败: {ex.Message}");
+                Console.WriteLine($"执行Tab+K热键操作失败: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// 执行流式翻译操作
-        /// 当检测到 T+S 组合键时调用
+        /// 执行RunLLMPrompt1Streaming操作
+        /// 当检测到 Tab+L 组合键时调用
         /// </summary>
-        private async void ExecuteTranslateStreamingAction()
+        private async void ExecuteRunLLMPrompt1Streaming()
         {
             try
             {
-                // 获取HomeViewModel单例实例
                 var homeViewModel = _container.Get<HomeViewModel>();
                 if (homeViewModel != null)
                 {
-                    await homeViewModel.TranslateToChineseStreaming();
+                    await homeViewModel.RunLLMPrompt1Streaming();
                 }
                 else
                 {
@@ -89,23 +90,22 @@ namespace Rouyan.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"执行热键操作失败: {ex.Message}");
+                Console.WriteLine($"执行Tab+L热键操作失败: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// 执行Markdown表格翻译操作
-        /// 当检测到 M+D 组合键时调用
+        /// 执行RunLLMPrompt2操作
+        /// 当检测到 Tab+U 组合键时调用
         /// </summary>
-        private async void ExecuteMarkdownTableAction()
+        private async void ExecuteRunLLMPrompt2()
         {
             try
             {
-                // 获取HomeViewModel单例实例
                 var homeViewModel = _container.Get<HomeViewModel>();
                 if (homeViewModel != null)
                 {
-                    await homeViewModel.TranslateToMarkDownTable();
+                    await homeViewModel.RunLLMPrompt2();
                 }
                 else
                 {
@@ -114,23 +114,22 @@ namespace Rouyan.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"执行热键操作失败: {ex.Message}");
+                Console.WriteLine($"执行Tab+U热键操作失败: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// 执行图片解释操作
-        /// 当检测到 E+I 组合键时调用
+        /// 执行RunLLMPrompt2Streaming操作
+        /// 当检测到 Tab+I 组合键时调用
         /// </summary>
-        private async void ExecuteExplainImageAction()
+        private async void ExecuteRunLLMPrompt2Streaming()
         {
             try
             {
-                // 获取HomeViewModel单例实例
                 var homeViewModel = _container.Get<HomeViewModel>();
                 if (homeViewModel != null)
                 {
-                    await homeViewModel.ExplainImage();
+                    await homeViewModel.RunLLMPrompt2Streaming();
                 }
                 else
                 {
@@ -139,7 +138,103 @@ namespace Rouyan.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"执行热键操作失败: {ex.Message}");
+                Console.WriteLine($"执行Tab+I热键操作失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 执行RunVLMPrompt1操作
+        /// 当检测到 Tab+S 组合键时调用
+        /// </summary>
+        private async void ExecuteRunVLMPrompt1()
+        {
+            try
+            {
+                var homeViewModel = _container.Get<HomeViewModel>();
+                if (homeViewModel != null)
+                {
+                    await homeViewModel.RunVLMPrompt1();
+                }
+                else
+                {
+                    Console.WriteLine("警告: 无法获取HomeViewModel实例");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"执行Tab+S热键操作失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 执行RunVLMPrompt1Streaming操作
+        /// 当检测到 Tab+D 组合键时调用
+        /// </summary>
+        private async void ExecuteRunVLMPrompt1Streaming()
+        {
+            try
+            {
+                var homeViewModel = _container.Get<HomeViewModel>();
+                if (homeViewModel != null)
+                {
+                    await homeViewModel.RunVLMPrompt1Streaming();
+                }
+                else
+                {
+                    Console.WriteLine("警告: 无法获取HomeViewModel实例");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"执行Tab+D热键操作失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 执行RunVLMPrompt2操作
+        /// 当检测到 Tab+W 组合键时调用
+        /// </summary>
+        private async void ExecuteRunVLMPrompt2()
+        {
+            try
+            {
+                var homeViewModel = _container.Get<HomeViewModel>();
+                if (homeViewModel != null)
+                {
+                    await homeViewModel.RunVLMPrompt2();
+                }
+                else
+                {
+                    Console.WriteLine("警告: 无法获取HomeViewModel实例");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"执行Tab+W热键操作失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 执行RunVLMPrompt2Streaming操作
+        /// 当检测到 Tab+E 组合键时调用
+        /// </summary>
+        private async void ExecuteRunVLMPrompt2Streaming()
+        {
+            try
+            {
+                var homeViewModel = _container.Get<HomeViewModel>();
+                if (homeViewModel != null)
+                {
+                    await homeViewModel.RunVLMPrompt2Streaming();
+                }
+                else
+                {
+                    Console.WriteLine("警告: 无法获取HomeViewModel实例");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"执行Tab+E热键操作失败: {ex.Message}");
             }
         }
 

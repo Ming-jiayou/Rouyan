@@ -10,6 +10,7 @@ using StyletIoC;
 using System;
 using System.ClientModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -31,6 +32,20 @@ public class HomeViewModel : Screen
         this.windowManager = windowManager ?? throw new ArgumentNullException(nameof(windowManager));
         this.container = container ?? throw new ArgumentNullException(nameof(container));
         this.promptService = container.Get<PromptManagementService>();
+        _ = InitializeAsync();
+    }
+
+    private async Task InitializeAsync()
+    {
+        try
+        {
+            await this.promptService.LoadPromptsAsync();
+            Debug.WriteLine($"Prompts loaded. LLMPrompt1: {!string.IsNullOrEmpty(promptService.CurrentLLMPrompt1)}");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to load prompts: {ex.Message}");
+        }
     }
 
     #endregion
@@ -85,10 +100,24 @@ public class HomeViewModel : Screen
 
     #region 方法
 
+    private async Task EnsurePromptsLoadedAsync()
+    {
+        if (string.IsNullOrEmpty(promptService.CurrentLLMPrompt1) ||
+            string.IsNullOrEmpty(promptService.CurrentLLMPrompt2) ||
+            string.IsNullOrEmpty(promptService.CurrentVLMPrompt1) ||
+            string.IsNullOrEmpty(promptService.CurrentVLMPrompt2))
+        {
+            Console.WriteLine("Prompts not loaded yet, loading now...");
+            await promptService.LoadPromptsAsync();
+        }
+    }
+
     public async Task RunLLMPrompt1 ()
     {
         try
         {
+            await EnsurePromptsLoadedAsync();
+
             var waitingViewModel = container.Get<WaitingViewModel>();
             windowManager.ShowWindow(waitingViewModel);
             // 获取剪切板文本 - 确保在UI线程上执行
@@ -178,6 +207,8 @@ public class HomeViewModel : Screen
     {
         try
         {
+            await EnsurePromptsLoadedAsync();
+
             // 获取剪切板文本 - 确保在UI线程上执行
             string clipboardText = string.Empty;
             await Application.Current.Dispatcher.InvokeAsync(() =>
@@ -245,6 +276,8 @@ public class HomeViewModel : Screen
     {
         try
         {
+            await EnsurePromptsLoadedAsync();
+
             var waitingViewModel = container.Get<WaitingViewModel>();
             windowManager.ShowWindow(waitingViewModel);
             // 获取剪切板文本 - 确保在UI线程上执行
@@ -334,6 +367,8 @@ public class HomeViewModel : Screen
     {
         try
         {
+            await EnsurePromptsLoadedAsync();
+
             // 获取剪切板文本 - 确保在UI线程上执行
             string clipboardText = string.Empty;
             await Application.Current.Dispatcher.InvokeAsync(() =>
@@ -605,6 +640,8 @@ public class HomeViewModel : Screen
     {
         try
         {
+            await EnsurePromptsLoadedAsync();
+
             var waitingViewModel = container.Get<WaitingViewModel>();
             windowManager.ShowWindow(waitingViewModel);
             // 获取剪切板图片 - 确保在UI线程上执行
@@ -700,7 +737,9 @@ public class HomeViewModel : Screen
     public async Task RunVLMPrompt1Streaming()
     {
         try
-        {       
+        {
+            await EnsurePromptsLoadedAsync();
+
             // 获取剪切板图片 - 确保在UI线程上执行
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
@@ -772,6 +811,8 @@ public class HomeViewModel : Screen
     {
         try
         {
+            await EnsurePromptsLoadedAsync();
+
             var waitingViewModel = container.Get<WaitingViewModel>();
             windowManager.ShowWindow(waitingViewModel);
             // 获取剪切板图片 - 确保在UI线程上执行
@@ -867,6 +908,8 @@ public class HomeViewModel : Screen
     {
         try
         {
+            await EnsurePromptsLoadedAsync();
+
             // 获取剪切板图片 - 确保在UI线程上执行
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
@@ -942,21 +985,21 @@ public class HomeViewModel : Screen
             return;
         }
 
-        switch (operation)
-        {
-            case "翻译文本":
-                await TranslateToChinese();
-                break;
-            case "翻译md表格":
-                await TranslateToMarkDownTable();
-                break;
-            case "解释图片":
-                await ExplainImage();
-                break;
-            default:
-                MessageBox.Show("无效的操作选择", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-                break;
-        }
+        //switch (operation)
+        //{
+        //    case "翻译文本":
+        //        await TranslateToChinese();
+        //        break;
+        //    case "翻译md表格":
+        //        await TranslateToMarkDownTable();
+        //        break;
+        //    case "解释图片":
+        //        await ExplainImage();
+        //        break;
+        //    default:
+        //        MessageBox.Show("无效的操作选择", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        //        break;
+        //}
     }
 
     public async Task Test()

@@ -6,12 +6,12 @@ using System.Windows.Threading;
 namespace Rouyan.Services
 {
     /// <summary>
-    /// 全局热键序列服务，支持多种组合键
+    /// 全局热键序列服务，支持Tab+字母组合键
     /// </summary>
     public class KeySequenceService : IDisposable
     {
         #region Win32 APIs
-        
+
         [DllImport("user32.dll")]
         private static extern short GetAsyncKeyState(int vKey);
 
@@ -36,16 +36,18 @@ namespace Rouyan.Services
         // 低级键盘钩子常量
         private const int WH_KEYBOARD_LL = 13;
         private const int WM_KEYDOWN = 0x0100;
-        
-        // 按键常量
-        private const int VK_T = 0x54;
-        private const int VK_C = 0x43;
-        private const int VK_S = 0x53;
-        private const int VK_M = 0x4D;
-        private const int VK_D = 0x44;
-        private const int VK_E = 0x45;
+
+        // 按键常量（Tab + 字母 序列）
+        private const int VK_TAB = 0x09;
+        private const int VK_K = 0x4B;
+        private const int VK_L = 0x4C;
+        private const int VK_U = 0x55;
         private const int VK_I = 0x49;
-        
+        private const int VK_S = 0x53;
+        private const int VK_D = 0x44;
+        private const int VK_W = 0x57;
+        private const int VK_E = 0x45;
+
         // 序列超时时间（毫秒）
         private const int SEQUENCE_TIMEOUT_MS = 2000;
 
@@ -56,23 +58,24 @@ namespace Rouyan.Services
         private enum HotkeyMode
         {
             None,
-            WaitingForC,
-            WaitingForS,
-            WaitingForD,
-            WaitingForI
+            WaitingAfterTab
         }
 
         #endregion
 
         #region Fields
 
-        private readonly Action _tCAction;
-        private readonly Action _tSAction;
-        private readonly Action _mDAction;
-        private readonly Action _eIAction;
+        private readonly Action _runLLMPrompt1;
+        private readonly Action _runLLMPrompt1Streaming;
+        private readonly Action _runLLMPrompt2;
+        private readonly Action _runLLMPrompt2Streaming;
+        private readonly Action _runVLMPrompt1;
+        private readonly Action _runVLMPrompt1Streaming;
+        private readonly Action _runVLMPrompt2;
+        private readonly Action _runVLMPrompt2Streaming;
         private IntPtr _hookID = IntPtr.Zero;
         private readonly LowLevelKeyboardProc _proc;
-        
+
         // 键序列状态
         private HotkeyMode _currentMode = HotkeyMode.None;
         private DateTime _sequenceStartTime = DateTime.MinValue;
@@ -81,12 +84,24 @@ namespace Rouyan.Services
 
         #region Constructor & Initialization
 
-        public KeySequenceService(Window window, Action tcAction, Action tsAction, Action mdAction, Action eiAction)
+        public KeySequenceService(
+            Action runLLMPrompt1,
+            Action runLLMPrompt1Streaming,
+            Action runLLMPrompt2,
+            Action runLLMPrompt2Streaming,
+            Action runVLMPrompt1,
+            Action runVLMPrompt1Streaming,
+            Action runVLMPrompt2,
+            Action runVLMPrompt2Streaming)
         {
-            _tCAction = tcAction ?? throw new ArgumentNullException(nameof(tcAction));
-            _tSAction = tsAction ?? throw new ArgumentNullException(nameof(tsAction));
-            _mDAction = mdAction ?? throw new ArgumentNullException(nameof(mdAction));
-            _eIAction = eiAction ?? throw new ArgumentNullException(nameof(eiAction));
+            _runLLMPrompt1 = runLLMPrompt1 ?? throw new ArgumentNullException(nameof(runLLMPrompt1));
+            _runLLMPrompt1Streaming = runLLMPrompt1Streaming ?? throw new ArgumentNullException(nameof(runLLMPrompt1Streaming));
+            _runLLMPrompt2 = runLLMPrompt2 ?? throw new ArgumentNullException(nameof(runLLMPrompt2));
+            _runLLMPrompt2Streaming = runLLMPrompt2Streaming ?? throw new ArgumentNullException(nameof(runLLMPrompt2Streaming));
+            _runVLMPrompt1 = runVLMPrompt1 ?? throw new ArgumentNullException(nameof(runVLMPrompt1));
+            _runVLMPrompt1Streaming = runVLMPrompt1Streaming ?? throw new ArgumentNullException(nameof(runVLMPrompt1Streaming));
+            _runVLMPrompt2 = runVLMPrompt2 ?? throw new ArgumentNullException(nameof(runVLMPrompt2));
+            _runVLMPrompt2Streaming = runVLMPrompt2Streaming ?? throw new ArgumentNullException(nameof(runVLMPrompt2Streaming));
             _proc = HookCallback;
         }
 
@@ -101,7 +116,15 @@ namespace Rouyan.Services
                 }
                 else
                 {
-                    Console.WriteLine("全局热键已注册：T+C (翻译), T+S (流式翻译), M+D (表格翻译), E+I (图片解释)");
+                    Console.WriteLine("全局热键已注册：\n" +
+                        "Tab+K (RunLLMPrompt1)\n" +
+                        "Tab+L (RunLLMPrompt1Streaming)\n" +
+                        "Tab+U (RunLLMPrompt2)\n" +
+                        "Tab+I (RunLLMPrompt2Streaming)\n" +
+                        "Tab+S (RunVLMPrompt1)\n" +
+                        "Tab+D (RunVLMPrompt1Streaming)\n" +
+                        "Tab+W (RunVLMPrompt2)\n" +
+                        "Tab+E (RunVLMPrompt2Streaming)");
                 }
             }
             catch (Exception ex)
@@ -142,81 +165,66 @@ namespace Rouyan.Services
             switch (_currentMode)
             {
                 case HotkeyMode.None:
-                    if (vkCode == VK_T)
+                    if (vkCode == VK_TAB)
                     {
-                        _currentMode = HotkeyMode.WaitingForC;
+                        _currentMode = HotkeyMode.WaitingAfterTab;
                         _sequenceStartTime = DateTime.Now;
-                        Console.WriteLine("检测到 T 键，等待按下 C 键或 S 键...");
-                    }
-                    else if (vkCode == VK_M)
-                    {
-                        _currentMode = HotkeyMode.WaitingForD;
-                        _sequenceStartTime = DateTime.Now;
-                        Console.WriteLine("检测到 M 键，等待按下 D 键...");
-                    }
-                    else if (vkCode == VK_E)
-                    {
-                        _currentMode = HotkeyMode.WaitingForI;
-                        _sequenceStartTime = DateTime.Now;
-                        Console.WriteLine("检测到 E 键，等待按下 I 键...");
+                        Console.WriteLine("检测到 Tab 键，等待按下后续字母键...");
                     }
                     break;
 
-                case HotkeyMode.WaitingForC:
-                    if (vkCode == VK_C)
+                case HotkeyMode.WaitingAfterTab:
+                    if (IsTimeout())
                     {
-                        if (IsTimeout())
-                        {
-                            Console.WriteLine("按键序列 T+C 超时");
-                        }
-                        else
-                        {
-                            Console.WriteLine("检测到完整组合键 T+C，执行翻译操作...");
-                            ExecuteTCAction();
-                        }
+                        Console.WriteLine("按键序列超时");
                     }
-                    else if (vkCode == VK_S)
+                    else
                     {
-                        if (IsTimeout())
+                        switch (vkCode)
                         {
-                            Console.WriteLine("按键序列 T+S 超时");
-                        }
-                        else
-                        {
-                            Console.WriteLine("检测到完整组合键 T+S，执行流式翻译操作...");
-                            ExecuteTSAction();
-                        }
-                    }
-                    ResetState();
-                    break;
+                            case VK_K:
+                                Console.WriteLine("检测到完整组合键 Tab+K，执行 RunLLMPrompt1...");
+                                ExecuteAction(_runLLMPrompt1);
+                                break;
 
-                case HotkeyMode.WaitingForD:
-                    if (vkCode == VK_D)
-                    {
-                        if (IsTimeout())
-                        {
-                            Console.WriteLine("按键序列 M+D 超时");
-                        }
-                        else
-                        {
-                            Console.WriteLine("检测到完整组合键 M+D，执行表格翻译操作...");
-                            ExecuteMDAction();
-                        }
-                    }
-                    ResetState();
-                    break;
+                            case VK_L:
+                                Console.WriteLine("检测到完整组合键 Tab+L，执行 RunLLMPrompt1Streaming...");
+                                ExecuteAction(_runLLMPrompt1Streaming);
+                                break;
 
-                case HotkeyMode.WaitingForI:
-                    if (vkCode == VK_I)
-                    {
-                        if (IsTimeout())
-                        {
-                            Console.WriteLine("按键序列 E+I 超时");
-                        }
-                        else
-                        {
-                            Console.WriteLine("检测到完整组合键 E+I，执行图片解释操作...");
-                            ExecuteEIAction();
+                            case VK_U:
+                                Console.WriteLine("检测到完整组合键 Tab+U，执行 RunLLMPrompt2...");
+                                ExecuteAction(_runLLMPrompt2);
+                                break;
+
+                            case VK_I:
+                                Console.WriteLine("检测到完整组合键 Tab+I，执行 RunLLMPrompt2Streaming...");
+                                ExecuteAction(_runLLMPrompt2Streaming);
+                                break;
+
+                            case VK_S:
+                                Console.WriteLine("检测到完整组合键 Tab+S，执行 RunVLMPrompt1...");
+                                ExecuteAction(_runVLMPrompt1);
+                                break;
+
+                            case VK_D:
+                                Console.WriteLine("检测到完整组合键 Tab+D，执行 RunVLMPrompt1Streaming...");
+                                ExecuteAction(_runVLMPrompt1Streaming);
+                                break;
+
+                            case VK_W:
+                                Console.WriteLine("检测到完整组合键 Tab+W，执行 RunVLMPrompt2...");
+                                ExecuteAction(_runVLMPrompt2);
+                                break;
+
+                            case VK_E:
+                                Console.WriteLine("检测到完整组合键 Tab+E，执行 RunVLMPrompt2Streaming...");
+                                ExecuteAction(_runVLMPrompt2Streaming);
+                                break;
+
+                            default:
+                                Console.WriteLine($"检测到 Tab 后的无效按键: {vkCode}");
+                                break;
                         }
                     }
                     ResetState();
@@ -242,25 +250,6 @@ namespace Rouyan.Services
             _sequenceStartTime = DateTime.MinValue;
         }
 
-        private void ExecuteTCAction()
-        {
-            ExecuteAction(_tCAction);
-        }
-
-        private void ExecuteTSAction()
-        {
-            ExecuteAction(_tSAction);
-        }
-
-        private void ExecuteMDAction()
-        {
-            ExecuteAction(_mDAction);
-        }
-
-        private void ExecuteEIAction()
-        {
-            ExecuteAction(_eIAction);
-        }
 
         private void ExecuteAction(Action action)
         {

@@ -11,7 +11,7 @@ namespace Rouyan.Pages.ViewModel
     {
         public ShowMessageViewModel()
         {
-            Title = "翻译窗口";
+            Title = "流式显示窗体";
         }
 
         private string _titile = string.Empty;
