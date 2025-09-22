@@ -47,38 +47,92 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                
-                <!-- 第一行：文本翻译 -->
+
+                <!-- LLM 提示词 -->
                 <TextBlock Grid.Column="0" Grid.Row="0"
-                    Text="T + C："
+                    Text="Tab + K："
                     FontSize="14"
                     Margin="0,0,10,5"
                     FontWeight="SemiBold"/>
                 <TextBlock Grid.Column="1" Grid.Row="0"
-                    Text="文本翻译"
+                    Text="RunLLMPrompt1"
                     FontSize="14"
                     Margin="0,0,0,5"/>
 
-                <!-- 第二行：表格翻译 -->
                 <TextBlock Grid.Column="0" Grid.Row="1"
-                    Text="M + D："
+                    Text="Tab + L："
                     FontSize="14"
                     Margin="0,0,10,5"
                     FontWeight="SemiBold"/>
                 <TextBlock Grid.Column="1" Grid.Row="1"
-                    Text="表格翻译"
+                    Text="RunLLMPrompt1Streaming"
                     FontSize="14"
                     Margin="0,0,0,5"/>
 
-                <!-- 第三行：图片解释 -->
                 <TextBlock Grid.Column="0" Grid.Row="2"
-                    Text="E + I："
+                    Text="Tab + U："
                     FontSize="14"
                     Margin="0,0,10,5"
                     FontWeight="SemiBold"/>
                 <TextBlock Grid.Column="1" Grid.Row="2"
-                    Text="图片解释"
+                    Text="RunLLMPrompt2"
+                    FontSize="14"
+                    Margin="0,0,0,5"/>
+
+                <TextBlock Grid.Column="0" Grid.Row="3"
+                    Text="Tab + I："
+                    FontSize="14"
+                    Margin="0,0,10,5"
+                    FontWeight="SemiBold"/>
+                <TextBlock Grid.Column="1" Grid.Row="3"
+                    Text="RunLLMPrompt2Streaming"
+                    FontSize="14"
+                    Margin="0,0,0,5"/>
+
+                <!-- VLM 提示词 -->
+                <TextBlock Grid.Column="0" Grid.Row="4"
+                    Text="Tab + S："
+                    FontSize="14"
+                    Margin="0,0,10,5"
+                    FontWeight="SemiBold"/>
+                <TextBlock Grid.Column="1" Grid.Row="4"
+                    Text="RunVLMPrompt1"
+                    FontSize="14"
+                    Margin="0,0,0,5"/>
+
+                <TextBlock Grid.Column="0" Grid.Row="5"
+                    Text="Tab + D："
+                    FontSize="14"
+                    Margin="0,0,10,5"
+                    FontWeight="SemiBold"/>
+                <TextBlock Grid.Column="1" Grid.Row="5"
+                    Text="RunVLMPrompt1Streaming"
+                    FontSize="14"
+                    Margin="0,0,0,5"/>
+
+                <TextBlock Grid.Column="0" Grid.Row="6"
+                    Text="Tab + W："
+                    FontSize="14"
+                    Margin="0,0,10,5"
+                    FontWeight="SemiBold"/>
+                <TextBlock Grid.Column="1" Grid.Row="6"
+                    Text="RunVLMPrompt2"
+                    FontSize="14"
+                    Margin="0,0,0,5"/>
+
+                <TextBlock Grid.Column="0" Grid.Row="7"
+                    Text="Tab + E："
+                    FontSize="14"
+                    Margin="0,0,10,5"
+                    FontWeight="SemiBold"/>
+                <TextBlock Grid.Column="1" Grid.Row="7"
+                    Text="RunVLMPrompt2Streaming"
                     FontSize="14"
                     Margin="0,0,0,5"/>
             </Grid>

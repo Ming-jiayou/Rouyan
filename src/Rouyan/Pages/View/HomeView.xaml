@@ -61,13 +61,18 @@
             <!-- 左侧选择框 -->
             <ComboBox Grid.Column="0"
                       x:Name="OperationCombo"
-                      Width="150"
+                      Width="200"
                       Height="30"
                       Margin="5"
                       FontSize="14">
-                <ComboBoxItem Content="翻译文本"/>
-                <ComboBoxItem Content="翻译md表格"/>
-                <ComboBoxItem Content="解释图片"/>
+                <ComboBoxItem Content="RunLLMPrompt1"/>
+                <ComboBoxItem Content="RunLLMPrompt1Streaming"/>
+                <ComboBoxItem Content="RunLLMPrompt2"/>
+                <ComboBoxItem Content="RunLLMPrompt2Streaming"/>
+                <ComboBoxItem Content="RunVLMPrompt1"/>
+                <ComboBoxItem Content="RunVLMPrompt1Streaming"/>
+                <ComboBoxItem Content="RunVLMPrompt2"/>
+                <ComboBoxItem Content="RunVLMPrompt2Streaming"/>
             </ComboBox>
             
             <!-- 右侧执行按钮 -->

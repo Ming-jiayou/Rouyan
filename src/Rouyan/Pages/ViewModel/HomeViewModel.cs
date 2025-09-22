@@ -985,21 +985,36 @@ public class HomeViewModel : Screen
             return;
         }
 
-        //switch (operation)
-        //{
-        //    case "翻译文本":
-        //        await TranslateToChinese();
-        //        break;
-        //    case "翻译md表格":
-        //        await TranslateToMarkDownTable();
-        //        break;
-        //    case "解释图片":
-        //        await ExplainImage();
-        //        break;
-        //    default:
-        //        MessageBox.Show("无效的操作选择", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-        //        break;
-        //}
+        switch (operation)
+        {
+            case "RunLLMPrompt1":
+                await RunLLMPrompt1();
+                break;
+            case "RunLLMPrompt1Streaming":
+                await RunLLMPrompt1Streaming();
+                break;
+            case "RunLLMPrompt2":
+                await RunLLMPrompt2();
+                break;
+            case "RunLLMPrompt2Streaming":
+                await RunLLMPrompt2Streaming();
+                break;
+            case "RunVLMPrompt1":
+                await RunVLMPrompt1();
+                break;
+            case "RunVLMPrompt1Streaming":
+                await RunVLMPrompt1Streaming();
+                break;
+            case "RunVLMPrompt2":
+                await RunVLMPrompt2();
+                break;
+            case "RunVLMPrompt2Streaming":
+                await RunVLMPrompt2Streaming();
+                break;
+            default:
+                MessageBox.Show("无效的操作选择", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                break;
+        }
     }
 
     public async Task Test()
