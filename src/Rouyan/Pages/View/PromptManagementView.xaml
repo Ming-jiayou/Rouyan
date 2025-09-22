@@ -24,7 +24,7 @@
         <!-- TabControl -->
         <TabControl Grid.Row="1" Margin="20">
             <!-- 当前使用的LLM提示词 -->
-            <TabItem Header="当前LLM提示词">
+            <TabItem Header="当前LLM提示词1">
                 <Grid Margin="10">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -38,7 +38,30 @@
                                Margin="0,0,0,10"/>
 
                     <TextBox Grid.Row="1"
-                             Text="{Binding CurrentLLMPrompt, Mode=TwoWay}"
+                             Text="{Binding CurrentLLMPrompt1, Mode=TwoWay}"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"
+                             VerticalScrollBarVisibility="Auto"
+                             IsReadOnly="True"
+                             Background="LightGray"/>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="当前LLM提示词2">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               Text="当前使用的LLM提示词："
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,10"/>
+
+                    <TextBox Grid.Row="1"
+                             Text="{Binding CurrentLLMPrompt2, Mode=TwoWay}"
                              TextWrapping="Wrap"
                              AcceptsReturn="True"
                              VerticalScrollBarVisibility="Auto"
@@ -78,16 +101,20 @@
                              Background="LightGray"
                              Margin="0,0,0,10"/>
 
-                    <Button Grid.Row="3"
-                            Content="使用此提示词"
-                            Command="{s:Action SetCurrentLLMPrompt}"
-                            HorizontalAlignment="Right"
-                            Padding="15,5"/>
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="设置为LLM提示词1"
+                                Command="{s:Action SetCurrentLLMPrompt1}"
+                                Margin="0,0,10,0"
+                                Padding="15,5"/>
+                        <Button Content="设置为LLM提示词2"
+                                Command="{s:Action SetCurrentLLMPrompt2}"
+                                Padding="15,5"/>
+                    </StackPanel>
                 </Grid>
             </TabItem>
 
             <!-- 当前使用的VLM提示词 -->
-            <TabItem Header="当前VLM提示词">
+            <TabItem Header="当前VLM提示词1">
                 <Grid Margin="10">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -101,7 +128,30 @@
                                Margin="0,0,0,10"/>
 
                     <TextBox Grid.Row="1"
-                             Text="{Binding CurrentVLMPrompt, Mode=TwoWay}"
+                             Text="{Binding CurrentVLMPrompt1, Mode=TwoWay}"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"
+                             VerticalScrollBarVisibility="Auto"
+                             IsReadOnly="True"
+                             Background="LightGray"/>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="当前VLM提示词2">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               Text="当前使用的VLM提示词："
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,10"/>
+
+                    <TextBox Grid.Row="1"
+                             Text="{Binding CurrentVLMPrompt2, Mode=TwoWay}"
                              TextWrapping="Wrap"
                              AcceptsReturn="True"
                              VerticalScrollBarVisibility="Auto"
@@ -141,11 +191,15 @@
                              Background="LightGray"
                              Margin="0,0,0,10"/>
 
-                    <Button Grid.Row="3"
-                            Content="使用此提示词"
-                            Command="{s:Action SetCurrentVLMPrompt}"
-                            HorizontalAlignment="Right"
-                            Padding="15,5"/>
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="设置为VLM提示词1"
+                                Command="{s:Action SetCurrentVLMPrompt1}"
+                                Margin="0,0,10,0"
+                                Padding="15,5"/>
+                        <Button Content="设置为VLM提示词2"
+                                Command="{s:Action SetCurrentVLMPrompt2}"
+                                Padding="15,5"/>
+                    </StackPanel>
                 </Grid>
             </TabItem>
         </TabControl>

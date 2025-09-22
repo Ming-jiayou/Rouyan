@@ -11,6 +11,7 @@
   <ItemGroup>
     <None Remove=".env" />
     <None Remove="Prompts\LLMPrompts\02.txt" />
+    <None Remove="Prompts\PromptConfig.txt" />
     <None Remove="Prompts\VLMPrompts\01.txt" />
     <None Remove="Prompts\VLMPrompts\02.txt" />
   </ItemGroup>
@@ -20,6 +21,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Prompts\LLMPrompts\02.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Prompts\PromptConfig.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Prompts\VLMPrompts\01.txt">
