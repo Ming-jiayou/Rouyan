@@ -64,49 +64,10 @@ namespace Rouyan.Services
                     }
 
                     // 根据配置文件设置当前提示词
-                    if (config.ContainsKey("LLMPrompt1") && LLMPrompts.Any(p => p.Name == config["LLMPrompt1"]))
-                    {
-                        CurrentLLMPrompt1 = LLMPrompts.First(p => p.Name == config["LLMPrompt1"]).Content;
-                    }
-                    else if (LLMPrompts.Any())
-                    {
-                        CurrentLLMPrompt1 = LLMPrompts.First().Content;
-                    }
-
-                    if (config.ContainsKey("LLMPrompt2") && LLMPrompts.Any(p => p.Name == config["LLMPrompt2"]))
-                    {
-                        CurrentLLMPrompt2 = LLMPrompts.First(p => p.Name == config["LLMPrompt2"]).Content;
-                    }
-                    else if (LLMPrompts.Count > 1)
-                    {
-                        CurrentLLMPrompt2 = LLMPrompts.ElementAt(1).Content;
-                    }
-                    else if (LLMPrompts.Any())
-                    {
-                        CurrentLLMPrompt2 = LLMPrompts.First().Content;
-                    }
-
-                    if (config.ContainsKey("VLMPrompt1") && VLMPrompts.Any(p => p.Name == config["VLMPrompt1"]))
-                    {
-                        CurrentVLMPrompt1 = VLMPrompts.First(p => p.Name == config["VLMPrompt1"]).Content;
-                    }
-                    else if (VLMPrompts.Any())
-                    {
-                        CurrentVLMPrompt1 = VLMPrompts.First().Content;
-                    }
-
-                    if (config.ContainsKey("VLMPrompt2") && VLMPrompts.Any(p => p.Name == config["VLMPrompt2"]))
-                    {
-                        CurrentVLMPrompt2 = VLMPrompts.First(p => p.Name == config["VLMPrompt2"]).Content;
-                    }
-                    else if (VLMPrompts.Count > 1)
-                    {
-                        CurrentVLMPrompt2 = VLMPrompts.ElementAt(1).Content;
-                    }
-                    else if (VLMPrompts.Any())
-                    {
-                        CurrentVLMPrompt2 = VLMPrompts.First().Content;
-                    }
+                    CurrentLLMPrompt1 = GetPromptContent(config, "LLMPrompt1", LLMPrompts, 0);
+                    CurrentLLMPrompt2 = GetPromptContent(config, "LLMPrompt2", LLMPrompts, 1);
+                    CurrentVLMPrompt1 = GetPromptContent(config, "VLMPrompt1", VLMPrompts, 0);
+                    CurrentVLMPrompt2 = GetPromptContent(config, "VLMPrompt2", VLMPrompts, 1);
                 }
                 else
                 {
@@ -292,6 +253,23 @@ namespace Rouyan.Services
             
             // 如果源文件存在，使用它；否则回退到原来的路径
             return File.Exists(sourcePath) ? sourcePath : _configFilePath;
+        }
+
+        private string GetPromptContent(Dictionary<string, string> config, string configKey, ObservableCollection<PromptItem> prompts, int defaultIndex)
+        {
+            if (config.ContainsKey(configKey) && prompts.Any(p => p.Name + ".txt" == config[configKey]))
+            {
+                return prompts.First(p => p.Name + ".txt" == config[configKey]).Content;
+            }
+            else if (prompts.Count > defaultIndex)
+            {
+                return prompts.ElementAt(defaultIndex).Content;
+            }
+            else if (prompts.Any())
+            {
+                return prompts.First().Content;
+            }
+            return string.Empty;
         }
     }
 }
