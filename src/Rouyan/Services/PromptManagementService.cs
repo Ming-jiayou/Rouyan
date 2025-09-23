@@ -1,5 +1,6 @@
 ﻿using Rouyan.Interfaces;
 using Rouyan.Models;
+using Stylet;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -17,7 +18,7 @@ namespace Rouyan.Services
         private readonly string _vlmPromptsDirectory;
         private readonly string _configFilePath;
 
-        public PromptManagementService()
+        public PromptManagementService(IEventAggregator eventAggregator)
         {
             _baseDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Prompts");
             _llmPromptsDirectory = Path.Combine(_baseDirectory, "LLMPrompts");
@@ -200,7 +201,7 @@ namespace Rouyan.Services
                 CurrentVLMPrompt2 = prompt.Content;
             }
         }
-
+     
         public async Task SaveConfigAsync()
         {
             try

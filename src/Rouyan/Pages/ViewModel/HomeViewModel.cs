@@ -31,7 +31,8 @@ public class HomeViewModel : Screen
         this.navigationController = navigationController ?? throw new ArgumentNullException(nameof(navigationController));
         this.windowManager = windowManager ?? throw new ArgumentNullException(nameof(windowManager));
         this.container = container ?? throw new ArgumentNullException(nameof(container));
-        this.promptService = container.Get<PromptManagementService>();
+        this.promptService = container.Get<PromptManagementService>();     
+        
         _ = InitializeAsync();
     }
 
@@ -56,6 +57,7 @@ public class HomeViewModel : Screen
     private readonly IWindowManager windowManager;
     private readonly IContainer container;
     private readonly PromptManagementService promptService;
+    private readonly IEventAggregator eventAggregator;
 
     private string _clipboardText = string.Empty;
     public string ClipboardText

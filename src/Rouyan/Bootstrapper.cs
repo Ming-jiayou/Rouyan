@@ -19,7 +19,7 @@ public class Bootstrapper : Bootstrapper<ShellViewModel>
         builder.Bind<IEnvConfigService>().To<EnvConfigService>().InSingletonScope();
 
         // 绑定提示词管理服务
-        builder.Bind<IPromptManagementService>().To<PromptManagementService>().InSingletonScope();
+        builder.Bind<PromptManagementService>().To<PromptManagementService>().InSingletonScope();
 
         // 将HomeViewModel绑定为单例，这样状态会保持一致
         builder.Bind<HomeViewModel>().To<HomeViewModel>().InSingletonScope();

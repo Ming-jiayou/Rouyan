@@ -9,6 +9,7 @@ using System.Windows.Input;
 using Rouyan.Services;
 using System.Windows;
 using Rouyan.Models;
+using Stylet;
 
 namespace Rouyan.Pages.ViewModel
 {
@@ -23,9 +24,10 @@ namespace Rouyan.Pages.ViewModel
         private PromptItem? _selectedLLMPrompt;
         private PromptItem? _selectedVLMPrompt;
 
+
         public PromptManagementViewModel(PromptManagementService promptService)
         {
-            _promptService = promptService;           
+            _promptService = promptService;
         }
 
         public string CurrentLLMPrompt1

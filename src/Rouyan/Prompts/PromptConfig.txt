@@ -1,4 +1,4 @@
 LLMPrompt1=01.txt
-LLMPrompt2=02.txt
+LLMPrompt2=03.txt
 VLMPrompt1=01.txt
 VLMPrompt2=02.txt
