@@ -46,14 +46,14 @@
                          BorderBrush="#FFABABAB"
                          BorderThickness="1"/>
                 
-                <!-- 第四列：测试按钮 -->
+                <!-- 第四列：测试按钮 --><!--
                 <Button Grid.Column="3"
                         Content="测试"
                         Padding="15,5"
                         FontSize="14"
                         Command="{s:Action Test}"
                         HorizontalAlignment="Center"
-                        VerticalAlignment="Center"/>
+                        VerticalAlignment="Center"/>-->
         </StackPanel>
         <!-- 第二行 -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
