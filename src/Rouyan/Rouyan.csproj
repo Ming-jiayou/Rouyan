@@ -42,6 +42,7 @@
 
   <ItemGroup>
     <Resource Include="Assets\福州肉燕.ico" />
+    <Resource Include="Assets\小铭同学的AI工具学习记录.jpg" />
   </ItemGroup>
 
   <ItemGroup>
