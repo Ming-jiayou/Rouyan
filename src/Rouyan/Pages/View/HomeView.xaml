@@ -39,7 +39,7 @@
                 <TextBox Grid.Column="2"
                          Text="{Binding SelectedFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          Height="30"
-                         Width="200"
+                         Width="300"
                          Margin="10,0"
                          FontSize="14"
                          VerticalContentAlignment="Center"

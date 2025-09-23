@@ -43,9 +43,12 @@ namespace Rouyan.Services
         {
             try
             {
-                if (File.Exists(_configFilePath))
+                // 获取源文件路径
+                var sourceConfigPath = GetSourceConfigPath();
+                
+                if (File.Exists(sourceConfigPath))
                 {
-                    var configLines = await File.ReadAllLinesAsync(_configFilePath);
+                    var configLines = await File.ReadAllLinesAsync(sourceConfigPath);
                     var config = new Dictionary<string, string>();
 
                     foreach (var line in configLines)
@@ -258,12 +261,37 @@ namespace Rouyan.Services
                 if (!string.IsNullOrEmpty(vlmPrompt2File))
                     config.Add($"VLMPrompt2={vlmPrompt2File}.txt");
 
-                await File.WriteAllLinesAsync(_configFilePath, config);
+                // 获取源文件路径，而不是输出目录路径
+                var sourceConfigPath = GetSourceConfigPath();
+                await File.WriteAllLinesAsync(sourceConfigPath, config);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error saving config: {ex.Message}");
             }
+        }
+
+        private string GetSourceConfigPath()
+        {
+            // 获取当前执行程序的路径
+            var currentPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            var directory = Path.GetDirectoryName(currentPath);
+            
+            // 向上导航到项目根目录，然后找到源文件
+            var projectRoot = directory;
+            
+            // 如果我们在 bin/Debug 或 bin/Release 目录中，向上导航到项目根目录
+            while (projectRoot != null &&
+                   (projectRoot.Contains("bin") || projectRoot.Contains("Debug") || projectRoot.Contains("Release")))
+            {
+                projectRoot = Path.GetDirectoryName(projectRoot);
+            }
+            
+            // 构建源文件路径
+            var sourcePath = Path.Combine(projectRoot ?? directory, "Prompts", "PromptConfig.txt");
+            
+            // 如果源文件存在，使用它；否则回退到原来的路径
+            return File.Exists(sourcePath) ? sourcePath : _configFilePath;
         }
     }
 }
