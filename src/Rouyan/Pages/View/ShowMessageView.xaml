@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:Rouyan.Pages.View"
         mc:Ignorable="d"
         Title="{Binding Title}" Height="450" Width="800"
+        Topmost="True"
         Icon="/Assets/福州肉燕.ico">
     <Grid>
         <TextBox Text="{Binding Text}" 

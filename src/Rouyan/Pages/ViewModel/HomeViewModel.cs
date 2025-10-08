@@ -57,7 +57,6 @@ public class HomeViewModel : Screen
     private readonly IWindowManager windowManager;
     private readonly IContainer container;
     private readonly PromptManagementService promptService;
-    private readonly IEventAggregator eventAggregator;
 
     private string _clipboardText = string.Empty;
     public string ClipboardText
