@@ -23,5 +23,15 @@ namespace Rouyan.Pages.View
         {
             InitializeComponent();
         }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                this.Close();
+                return;
+            }
+            base.OnKeyDown(e);
+        }
     }
 }

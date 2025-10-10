@@ -9,11 +9,12 @@ namespace Rouyan.Services
 {
     /// <summary>
     /// 全局热键服务管理器
-    /// 负责初始化和管理Tab+字母热键组合
+    /// 负责初始化和管理Tab+字母热键组合以及全局ESC键
     /// </summary>
     public class HotkeyService : IDisposable
     {
         private KeySequenceService? _keySequenceService;
+        private GlobalEscService? _globalEscService;
         private readonly IContainer _container;
 
         public HotkeyService(IContainer container)
@@ -29,6 +30,7 @@ namespace Rouyan.Services
         {
             try
             {
+                // 初始化Tab+字母组合键服务
                 _keySequenceService = new KeySequenceService(
                     ExecuteRunLLMPrompt1,
                     ExecuteRunLLMPrompt1Streaming,
@@ -39,6 +41,10 @@ namespace Rouyan.Services
                     ExecuteRunVLMPrompt2,
                     ExecuteRunVLMPrompt2Streaming);
                 _keySequenceService.RegisterHotKeys();
+
+                // 初始化全局ESC键服务
+                _globalEscService = new GlobalEscService();
+                _globalEscService.Register();
             }
             catch (Exception ex)
             {
@@ -241,6 +247,7 @@ namespace Rouyan.Services
         public void Dispose()
         {
             _keySequenceService?.Dispose();
+            _globalEscService?.Dispose();
         }
     }
 }
