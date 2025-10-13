@@ -18,6 +18,7 @@
     <None Remove="Prompts\VLMPrompts\02.txt" />
   </ItemGroup>
 
+
   <ItemGroup>
     <EmbeddedResource Include="Prompts\LLMPrompts\01.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -46,8 +47,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Assets\福州肉燕.ico" />
-    <Resource Include="Assets\小铭同学的AI工具学习记录.jpg" />
+	  <Resource Include="Assets\福州肉燕.ico" />
+	  <Resource Include="Assets\小铭同学的AI工具学习记录.jpg" />
   </ItemGroup>
 
   <ItemGroup>

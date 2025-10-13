@@ -11,8 +11,7 @@
         Icon="/Assets/福州肉燕.ico"
         xmlns:s="https://github.com/canton7/Stylet"
         Style="{StaticResource MaterialDesignWindow}"
-        StateChanged="Window_StateChanged"
-        d:DataContext="{d:DesignInstance vm:ShellViewModel}">
+        StateChanged="Window_StateChanged">
     <Grid>
         <Grid.ColumnDefinitions>
             <!-- 左侧导航菜单 -->
