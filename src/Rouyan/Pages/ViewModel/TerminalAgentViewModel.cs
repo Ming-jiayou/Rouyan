@@ -1,6 +1,7 @@
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using OpenAI;
+using OpenAI.Chat;
 using Stylet;
 using System;
 using System.ClientModel;
@@ -8,13 +9,14 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
 
 namespace Rouyan.Pages.ViewModel;
 
 public class TerminalAgentViewModel : Screen
 {
     private readonly IWindowManager _windowManager;
-    
+
     public TerminalAgentViewModel(IWindowManager windowManager)
     {
         _windowManager = windowManager;
@@ -112,7 +114,7 @@ public class TerminalAgentViewModel : Screen
                     Title = "命令执行审批",
                     Message = $"是否同意执行以下命令？\n\n函数名称: {functionName}\n脚本内容: {scriptContent}"
                 };
-                
+
                 bool? result = _windowManager.ShowDialog(dialogVm);
                 bool approved = result == true;
 
@@ -120,18 +122,19 @@ public class TerminalAgentViewModel : Screen
             }
 
             // Pass the user input responses back to the agent for further processing.
-            response = await agent.RunAsync(userInputResponses, thread);
+            // response = await agent.RunAsync(userInputResponses, thread);
 
-            userInputRequests = response.UserInputRequests.ToList();
+            //AsyncCollectionResult<StreamingChatCompletionUpdate> completionUpdates = agent.RunStreamingAsync("nihao");
+            //await foreach (StreamingChatCompletionUpdate completionUpdate in completionUpdates)
+            //{
+            //    if (completionUpdate.ContentUpdate.Count > 0)
+            //    {
+            //        OutputText += completionUpdate.ContentUpdate[0].Text;
+            //    }
+            //}
 
-            // For streaming use:
-            // updates = await agent.RunStreamingAsync(userInputResponses, thread).ToListAsync();
-            // userInputRequests = updates.SelectMany(x => x.UserInputRequests).ToList();
+            var updates = await agent.RunStreamingAsync(userInputResponses, thread).ToAgentRunResponseAsync();
+            userInputRequests = updates.UserInputRequests.ToList();
         }
-
-        OutputText = response.ToString();
-
-        // For streaming use:
-        // Console.WriteLine($"\nAgent: {updates.ToAgentRunResponse()}");
     }
 }
