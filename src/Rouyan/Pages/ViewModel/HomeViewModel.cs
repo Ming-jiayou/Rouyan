@@ -1055,6 +1055,11 @@ public class HomeViewModel : Screen
         this.navigationController.NavigateToSettings();
     }
 
+    public void NavigateToTerminalAgent()
+    {
+        this.navigationController.NavigateToTerminalAgent();
+    }
+
     public void GetClipboardContent()
     {
         try

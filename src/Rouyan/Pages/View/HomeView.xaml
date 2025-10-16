@@ -53,7 +53,7 @@
                         FontSize="14"
                         Command="{s:Action Test}"
                         HorizontalAlignment="Center"
-                        VerticalAlignment="Center"/>-->
+                        VerticalAlignment="Center"/>-->                         
         </StackPanel>
         <!-- 第二行 -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">

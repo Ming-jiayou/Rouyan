@@ -16,4 +16,5 @@ public class HeaderViewModel : Screen
     public void NavigateToPromptManagement() => this.navigationController.NavigateToPromptManagement();
     public void NavigateToSettings() => this.navigationController.NavigateToSettings();
     public void NavigateToAbout() => this.navigationController.NavigateToAbout();
+    public void NavigateToTerminalAgent() => this.navigationController.NavigateToTerminalAgent();
 }

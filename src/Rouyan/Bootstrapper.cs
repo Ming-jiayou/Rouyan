@@ -29,6 +29,7 @@ public class Bootstrapper : Bootstrapper<ShellViewModel>
         builder.Bind<Func<PromptManagementViewModel>>().ToFactory<Func<PromptManagementViewModel>>(c => () => c.Get<PromptManagementViewModel>());
         builder.Bind<Func<SettingsViewModel>>().ToFactory<Func<SettingsViewModel>>(c => () => c.Get<SettingsViewModel>());
         builder.Bind<Func<AboutViewModel>>().ToFactory<Func<AboutViewModel>>(c => () => c.Get<AboutViewModel>());
+        builder.Bind<Func<TerminalAgentViewModel>>().ToFactory<Func<TerminalAgentViewModel>>(c => () => c.Get<TerminalAgentViewModel>());
 
         // 绑定全局快捷键服务为单例
         builder.Bind<HotkeyService>().To<HotkeyService>().InSingletonScope();
