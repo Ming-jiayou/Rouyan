@@ -6,11 +6,20 @@ using System;
 using System.ClientModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Rouyan.Pages.ViewModel;
 
 public class TerminalAgentViewModel : Screen
 {
+    private readonly IWindowManager _windowManager;
+    
+    public TerminalAgentViewModel(IWindowManager windowManager)
+    {
+        _windowManager = windowManager;
+    }
+
 #pragma warning disable MEAI001
     private string _inputText = "获取当前时间";
     public string InputText
@@ -51,7 +60,7 @@ public class TerminalAgentViewModel : Screen
 
                 if (!string.IsNullOrWhiteSpace(error))
                 {
-                    return $"����: {error.Trim()}";
+                    return $"错误: {error.Trim()}";
                 }
 
                 return output.Trim();
@@ -59,16 +68,16 @@ public class TerminalAgentViewModel : Screen
         }
         catch (Exception ex)
         {
-            return $"ִ��ʧ��: {ex.Message}";
+            return $"执行失败: {ex.Message}";
         }
     }
 
     public async Task Run()
     {
         OutputText = string.Empty;
-        var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? throw new InvalidOperationException("δ���û���������OPENAI_API_KEY");
+        var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? throw new InvalidOperationException("未设置环境变量：OPENAI_API_KEY");
         var model = Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "gpt-4o-mini";
-        var baseUrl = Environment.GetEnvironmentVariable("OPENAI_BASEURL") ?? throw new InvalidOperationException("δ���û���������OPENAI_BASEURL");
+        var baseUrl = Environment.GetEnvironmentVariable("OPENAI_BASEURL") ?? throw new InvalidOperationException("未设置环境变量：OPENAI_BASEURL");
 
         ApiKeyCredential apiKeyCredential = new ApiKeyCredential(apiKey);
 
@@ -77,7 +86,7 @@ public class TerminalAgentViewModel : Screen
 
         AIAgent agent = new OpenAIClient(apiKeyCredential, openAIClientOptions)
             .GetChatClient(model)
-            .CreateAIAgent(instructions: "����һ���������˵����֣���ʹ�����Ļش�", tools: [new ApprovalRequiredAIFunction(AIFunctionFactory.Create(ExecuteCmd))]);
+            .CreateAIAgent(instructions: "你是一个乐于助人的助手，可以执行命令行脚本。请使用中文回答。", tools: [new ApprovalRequiredAIFunction(AIFunctionFactory.Create(ExecuteCmd))]);
 
         // Call the agent and check if there are any user input requests to handle.
         AgentThread thread = agent.GetNewThread();
@@ -91,18 +100,21 @@ public class TerminalAgentViewModel : Screen
 
         while (userInputRequests.Count > 0)
         {
-            // ���ڶԻ������Ϊ������
             var userInputResponses = new List<ChatMessage>();
 
             foreach (var functionApprovalRequest in userInputRequests.OfType<FunctionApprovalRequestContent>())
             {
-                //var result = await ShowDialogAsync($"�Ƿ�ͬ����ú�����\n" +
-                //                                   $"{functionApprovalRequest.FunctionCall.Name}��\n" +
-                //                                   $"�ű����ݣ�" +
-                //                                   $"{functionApprovalRequest.FunctionCall.Arguments?["script"]}��");
-                bool approved = true;
+                var scriptContent = functionApprovalRequest.FunctionCall.Arguments?["script"]?.ToString() ?? "未知脚本";
+                var functionName = functionApprovalRequest.FunctionCall.Name;
 
-                Debug.WriteLine($"�û��������: {(approved ? "ͬ��" : "�ܾ�")}");
+                var dialogVm = new HumanApprovalDialogViewModel
+                {
+                    Title = "命令执行审批",
+                    Message = $"是否同意执行以下命令？\n\n函数名称: {functionName}\n脚本内容: {scriptContent}"
+                };
+                
+                bool? result = _windowManager.ShowDialog(dialogVm);
+                bool approved = result == true;
 
                 userInputResponses.Add(new ChatMessage(ChatRole.User, [functionApprovalRequest.CreateResponse(approved)]));
             }

@@ -1,0 +1,51 @@
+<Window x:Class="Rouyan.Pages.View.HumanApprovalDialogView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:s="https://github.com/canton7/Stylet"
+        mc:Ignorable="d"
+        Title="{Binding Title}"
+        Height="200"
+        Width="420"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Topmost="True">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 顶部消息行 -->
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+            <TextBlock Text="{Binding Message}"
+                       TextWrapping="Wrap"
+                       FontSize="14"/>
+        </ScrollViewer>
+
+        <!-- 底部按钮行：左侧同意，右侧拒绝 -->
+        <Grid Grid.Row="1" Margin="0,16,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0"
+                    Content="同意"
+                    Width="100"
+                    Height="30"
+                    HorizontalAlignment="Left"
+                    IsDefault="True"
+                    Command="{s:Action Approve}"/>
+
+            <Button Grid.Column="1"
+                    Content="拒绝"
+                    Width="100"
+                    Height="30"
+                    HorizontalAlignment="Right"
+                    IsCancel="True"
+                    Command="{s:Action Reject}"/>
+        </Grid>
+    </Grid>
+</Window>
