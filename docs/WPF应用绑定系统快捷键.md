@@ -472,7 +472,7 @@ private async void ExecuteRunLLMPrompt1()
 
 用Rouyan举个例子就是按下tab + l快捷键时，就会自动弹出流式窗口，根据提示词的内容，对剪贴板中的内容进行处理，如下所示：
 
-![](https://files.mdnice.com/user/50031/7b34e69c-2003-498d-93ab-4bd11330028a.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/7b34e69c-2003-498d-93ab-4bd11330028a.png)
 
 然后按下esc就会关闭这个窗口，实现思路是一样的，代码我写到了GlobalEscService中，关键代码如下所示：
 

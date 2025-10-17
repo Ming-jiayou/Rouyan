@@ -28,7 +28,7 @@
 
 H.NotifyIcon.Wpf项目地址：*https://github.com/HavenDV/H.NotifyIcon*
 
-![](https://files.mdnice.com/user/50031/35eba36e-2a6f-42ec-9e61-9f922369911e.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/35eba36e-2a6f-42ec-9e61-9f922369911e.png)
 
 ## 使用
 
@@ -37,14 +37,14 @@ H.NotifyIcon.Wpf项目地址：*https://github.com/HavenDV/H.NotifyIcon*
 
 第一步安装nuget包：
 
-![](https://files.mdnice.com/user/50031/63fae3fb-1999-4837-bd96-05c561c087eb.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/63fae3fb-1999-4837-bd96-05c561c087eb.png)
 
 第二步在主窗口中添加控件：
 
 先添加`xmlns:tb="http://www.hardcodet.net/taskbar"`与`StateChanged="Window_StateChanged"`。
 
 
-![](https://files.mdnice.com/user/50031/c2d3c8ed-8224-48c8-91b7-785a2d70b7c5.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/c2d3c8ed-8224-48c8-91b7-785a2d70b7c5.png)
 
 
 ```xaml
@@ -123,7 +123,7 @@ private void ShowWindow_Click(object sender, RoutedEventArgs e)
 
 全部代码：
 
-![](https://files.mdnice.com/user/50031/3b550e81-613e-410d-bf25-ce751ec9d4f3.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/3b550e81-613e-410d-bf25-ce751ec9d4f3.png)
 
 项目地址：https://github.com/Ming-jiayou/Rouyan
 

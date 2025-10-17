@@ -7,22 +7,22 @@
 Demo所在的位置：
 
 
-![](https://files.mdnice.com/user/50031/37daa95c-8b5a-4c63-87a0-c04f7274d161.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/37daa95c-8b5a-4c63-87a0-c04f7274d161.png)
 
 先看一下导航的效果：
 
 首页
 
 
-![](https://files.mdnice.com/user/50031/58945453-39d5-492f-8ee7-f046eab10dee.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/58945453-39d5-492f-8ee7-f046eab10dee.png)
 
 通过上面导航到Page 2：
 
-![](https://files.mdnice.com/user/50031/baef169a-3e29-4a20-90d2-11dbbd196b26.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/baef169a-3e29-4a20-90d2-11dbbd196b26.png)
 
 通过Page1导航到Page2：
 
-![](https://files.mdnice.com/user/50031/42e9a359-ed49-4683-b61e-b1ccc4cd5be7.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/42e9a359-ed49-4683-b61e-b1ccc4cd5be7.png)
 
 
 
@@ -31,7 +31,7 @@ Demo所在的位置：
 
 先来看一下页面布局：
 
-![](https://files.mdnice.com/user/50031/ff34d76b-0113-486c-b4cf-0bccdb669c1d.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/ff34d76b-0113-486c-b4cf-0bccdb669c1d.png)
 
 一共有ShellView、HeaderView、Page1View与Page2View一共四个View。
 
@@ -63,7 +63,7 @@ ShellView的xaml如下：
 
 ActiveItem这个属性是在`ConductorBaseWithActiveItem<T>`中定义的：
 
-![](https://files.mdnice.com/user/50031/c1688653-e37c-4905-aa11-a375f0fb0b21.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/c1688653-e37c-4905-aa11-a375f0fb0b21.png)
 
 `ShellViewModel`继承` Conductor<IScreen>`，` Conductor<IScreen>`继承` ConductorBaseWithActiveItem<T>`。
 
@@ -115,7 +115,7 @@ public interface INavigationController
 
 再看看Bootstrapper中的ConfigureIoC方法：
 
-![](https://files.mdnice.com/user/50031/5be1f259-e4af-402f-bd75-6daa97563081.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/5be1f259-e4af-402f-bd75-6daa97563081.png)
 
 这样写的目的就是不是一开始就将Page1ViewModel与Page2ViewModel注入进来，而是在使用的时候才注入进来。
 
@@ -130,7 +130,7 @@ public interface INavigationControllerDelegate
 
 回到ShellViewModel，我们发现它实现了这个接口。
 
-![](https://files.mdnice.com/user/50031/2908c189-80df-4a7f-86a3-b81c38aaf4d5.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/2908c189-80df-4a7f-86a3-b81c38aaf4d5.png)
 
 来看下它的实现：
 
@@ -139,19 +139,19 @@ public interface INavigationControllerDelegate
  {
      this.ActivateItem(screen);
  }
- ```
- 
+```
+
  使用的是 `Conductor<T>`中的`ActivateItem`方法：
- 
-![](https://files.mdnice.com/user/50031/e19370d7-142a-4efd-b5cb-9fbe0ab74cfd.png)
+
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/e19370d7-142a-4efd-b5cb-9fbe0ab74cfd.png)
 
 当我们从页面1导航到页面2时：
 
-![](https://files.mdnice.com/user/50031/2e2a3829-dc67-4154-bb86-7a7177fab922.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/2e2a3829-dc67-4154-bb86-7a7177fab922.png)
 
 由于要导航去的Page2ViewModel不是当前的激活项Page1ViewModel，就会来到`ChangeActiveItem`方法：
 
-![](https://files.mdnice.com/user/50031/b6780c0f-73b5-4181-9379-0955adc5f01a.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/b6780c0f-73b5-4181-9379-0955adc5f01a.png)
 
 关闭之前的激活项，设置新的激活项。
 
@@ -159,7 +159,7 @@ public interface INavigationControllerDelegate
 
 最后再来看一下有一个循环依赖问题：
 
-![](https://files.mdnice.com/user/50031/d30db8cb-2c1f-4741-86a9-5534c11cefe9.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/d30db8cb-2c1f-4741-86a9-5534c11cefe9.png)
 
 这里存在一个循环依赖关系：ShellViewModel -> HeaderViewModel -> NavigationController -> ShellViewModel。
 
