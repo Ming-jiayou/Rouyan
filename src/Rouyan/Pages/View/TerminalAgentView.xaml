@@ -5,7 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:s="https://github.com/canton7/Stylet"
              mc:Ignorable="d"
-             d:DesignHeight="600" d:DesignWidth="1200">
+             d:DesignHeight="600" d:DesignWidth="1200"
+             PreviewKeyDown="UserControl_PreviewKeyDown">
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -21,7 +22,8 @@
              VerticalScrollBarVisibility="Auto"
              HorizontalScrollBarVisibility="Disabled"
              Margin="0,0,0,8"
-             Height="60"/>
+             Height="60">
+        </TextBox>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal">
             <Button Content="运行"
