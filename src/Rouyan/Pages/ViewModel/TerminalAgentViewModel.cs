@@ -9,6 +9,7 @@ using System.ClientModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
@@ -37,6 +38,29 @@ public class TerminalAgentViewModel : Screen
     {
         get => _outputText;
         set => SetAndNotify(ref _outputText, value);
+    }
+
+    private CancellationTokenSource? _cts;
+    private bool _isRunning;
+    public bool IsRunning
+    {
+        get => _isRunning;
+        private set
+        {
+            if (SetAndNotify(ref _isRunning, value))
+            {
+                NotifyOfPropertyChange(nameof(CanRun));
+                NotifyOfPropertyChange(nameof(CanCancel));
+            }
+        }
+    }
+
+    public bool CanRun => !_isRunning;
+    public bool CanCancel => _isRunning;
+
+    public void Cancel()
+    {
+        _cts?.Cancel();
     }
 
     [Description("Execute a Windows cmd.exe script and return its output.")]
@@ -78,71 +102,96 @@ public class TerminalAgentViewModel : Screen
 
     public async Task Run()
     {
+        if (IsRunning) return;
+
         OutputText = string.Empty;
+        _cts = new CancellationTokenSource();
+        IsRunning = true;
 
-        // 显示等待窗体
-        var waitingVm = new WaitingViewModel { Text = "正在分析请求，请稍候..." };
-        _windowManager.ShowWindow(waitingVm);
+        WaitingViewModel? waitingVm = null;
 
-        // 使用大语言模型翻译文本
-        DotEnv.Load();
-        var envVars = DotEnv.Read();
-
-        var apiKey = envVars["OPENAI_API_KEY"];
-        var model = envVars["OPENAI_CHAT_MODEL"];
-        var baseUrl = new Uri(envVars["OPENAI_BASE_URL"]);
-
-        ApiKeyCredential apiKeyCredential = new ApiKeyCredential(apiKey);
-
-        OpenAIClientOptions openAIClientOptions = new OpenAIClientOptions();
-        openAIClientOptions.Endpoint = baseUrl;
-
-        AIAgent agent = new OpenAIClient(apiKeyCredential, openAIClientOptions)
-            .GetChatClient(model)
-            .CreateAIAgent(instructions: "你是一个乐于助人的助手，可以执行命令行脚本。请使用中文回答。", tools: [new ApprovalRequiredAIFunction(AIFunctionFactory.Create(ExecuteCmd))]);
-
-        // Call the agent and check if there are any user input requests to handle.
-        AgentThread thread = agent.GetNewThread();
-
-        var response = await agent.RunAsync(InputText, thread);
-        var userInputRequests = response.UserInputRequests.ToList();
-
-        // 关闭等待窗体
-        waitingVm.RequestClose();
-        
-        // For streaming use:
-        // var updates = await agent.RunStreamingAsync(InputText, thread).ToListAsync();
-
-        while (userInputRequests.Count > 0)
+        try
         {
-            var userInputResponses = new List<ChatMessage>();
+            // 显示等待窗体
+            waitingVm = new WaitingViewModel { Text = "正在分析请求，请稍候..." };
+            _windowManager.ShowWindow(waitingVm);
 
-            foreach (var functionApprovalRequest in userInputRequests.OfType<FunctionApprovalRequestContent>())
+            // 使用大语言模型翻译文本
+            DotEnv.Load();
+            var envVars = DotEnv.Read();
+
+            var apiKey = envVars["OPENAI_API_KEY"];
+            var model = envVars["OPENAI_CHAT_MODEL"];
+            var baseUrl = new Uri(envVars["OPENAI_BASE_URL"]);
+
+            ApiKeyCredential apiKeyCredential = new ApiKeyCredential(apiKey);
+
+            OpenAIClientOptions openAIClientOptions = new OpenAIClientOptions();
+            openAIClientOptions.Endpoint = baseUrl;
+
+            AIAgent agent = new OpenAIClient(apiKeyCredential, openAIClientOptions)
+                .GetChatClient(model)
+                .CreateAIAgent(instructions: "你是一个乐于助人的助手，可以执行命令行脚本。请使用中文回答。", tools: [new ApprovalRequiredAIFunction(AIFunctionFactory.Create(ExecuteCmd))]);
+
+            // Call the agent and check if there are any user input requests to handle.
+            AgentThread thread = agent.GetNewThread();
+
+            var response = await agent.RunAsync(InputText, thread);
+            var userInputRequests = response.UserInputRequests.ToList();
+
+            // 关闭等待窗体
+            waitingVm?.RequestClose();
+
+            while (userInputRequests.Count > 0)
             {
-                var scriptContent = functionApprovalRequest.FunctionCall.Arguments?["script"]?.ToString() ?? "未知脚本";
-                var functionName = functionApprovalRequest.FunctionCall.Name;
+                if (_cts?.IsCancellationRequested == true) break;
 
-                var dialogVm = new HumanApprovalDialogViewModel
+                var userInputResponses = new List<ChatMessage>();
+
+                foreach (var functionApprovalRequest in userInputRequests.OfType<FunctionApprovalRequestContent>())
                 {
-                    Title = "命令执行审批",
-                    Message = $"是否同意执行以下命令？\n\n函数名称: {functionName}\n脚本内容: {scriptContent}"
-                };
+                    var scriptContent = functionApprovalRequest.FunctionCall.Arguments?["script"]?.ToString() ?? "未知脚本";
+                    var functionName = functionApprovalRequest.FunctionCall.Name;
 
-                bool? result = _windowManager.ShowDialog(dialogVm);
-                bool approved = result == true;
+                    var dialogVm = new HumanApprovalDialogViewModel
+                    {
+                        Title = "命令执行审批",
+                        Message = $"是否同意执行以下命令？\n\n函数名称: {functionName}\n脚本内容: {scriptContent}"
+                    };
 
-                userInputResponses.Add(new ChatMessage(ChatRole.User, [functionApprovalRequest.CreateResponse(approved)]));
+                    bool? result = _windowManager.ShowDialog(dialogVm);
+                    bool approved = result == true;
+
+                    userInputResponses.Add(new ChatMessage(ChatRole.User, [functionApprovalRequest.CreateResponse(approved)]));
+                }
+
+                // Pass the user input responses back to the agent for further processing.
+                response = await agent.RunAsync(userInputResponses, thread);
+                userInputRequests = response.UserInputRequests.ToList();
             }
 
-            // Pass the user input responses back to the agent for further processing.
-            response = await agent.RunAsync(userInputResponses, thread);
-            userInputRequests = response.UserInputRequests.ToList();          
-        }
+            if (_cts?.IsCancellationRequested == true)
+            {
+                OutputText += "\n已取消运行。";
+                return;
+            }
 
-        // Invoke the agent with streaming support.
-        await foreach (var update in agent.RunStreamingAsync("输出最终答案",thread))
+            // Invoke the agent with streaming support, honoring cancellation.
+            await foreach (var update in agent.RunStreamingAsync("输出最终答案", thread).WithCancellation(_cts!.Token))
+            {
+                OutputText += update.Text;
+            }
+        }
+        catch (OperationCanceledException)
         {
-            OutputText += update.Text;
+            OutputText += "\n已取消运行。";
+        }
+        finally
+        {
+            waitingVm?.RequestClose();
+            IsRunning = false;
+            _cts?.Dispose();
+            _cts = null;
         }
     }
 }
