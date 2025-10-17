@@ -1,3 +1,4 @@
+using dotenv.net;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using OpenAI;
@@ -77,14 +78,19 @@ public class TerminalAgentViewModel : Screen
     public async Task Run()
     {
         OutputText = string.Empty;
-        var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? throw new InvalidOperationException("未设置环境变量：OPENAI_API_KEY");
-        var model = Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "gpt-4o-mini";
-        var baseUrl = Environment.GetEnvironmentVariable("OPENAI_BASEURL") ?? throw new InvalidOperationException("未设置环境变量：OPENAI_BASEURL");
+
+        // 使用大语言模型翻译文本
+        DotEnv.Load();
+        var envVars = DotEnv.Read();
+
+        var apiKey = envVars["OPENAI_API_KEY"];
+        var model = envVars["OPENAI_CHAT_MODEL"];
+        var baseUrl = new Uri(envVars["OPENAI_BASE_URL"]);
 
         ApiKeyCredential apiKeyCredential = new ApiKeyCredential(apiKey);
 
         OpenAIClientOptions openAIClientOptions = new OpenAIClientOptions();
-        openAIClientOptions.Endpoint = new Uri(baseUrl);
+        openAIClientOptions.Endpoint = baseUrl;
 
         AIAgent agent = new OpenAIClient(apiKeyCredential, openAIClientOptions)
             .GetChatClient(model)
@@ -94,7 +100,7 @@ public class TerminalAgentViewModel : Screen
         AgentThread thread = agent.GetNewThread();
 
         var response = await agent.RunAsync(InputText, thread);
-        OutputText += response.Text;
+        OutputText = response.Text;
         var userInputRequests = response.UserInputRequests.ToList();
 
         // For streaming use:
