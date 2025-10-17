@@ -79,6 +79,10 @@ public class TerminalAgentViewModel : Screen
     {
         OutputText = string.Empty;
 
+        // 显示等待窗体
+        var waitingVm = new WaitingViewModel { Text = "正在分析请求，请稍候..." };
+        _windowManager.ShowWindow(waitingVm);
+
         // 使用大语言模型翻译文本
         DotEnv.Load();
         var envVars = DotEnv.Read();
@@ -102,6 +106,9 @@ public class TerminalAgentViewModel : Screen
         var response = await agent.RunAsync(InputText, thread);
         var userInputRequests = response.UserInputRequests.ToList();
 
+        // 关闭等待窗体
+        waitingVm.RequestClose();
+        
         // For streaming use:
         // var updates = await agent.RunStreamingAsync(InputText, thread).ToListAsync();
 
