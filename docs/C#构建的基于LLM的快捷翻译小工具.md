@@ -21,7 +21,8 @@ flowchart LR
     D --> E[粘贴到文件]
 ```
 
-![](https://files.mdnice.com/user/50031/5d8fbcde-9d0e-4267-a709-8f884e8d8c4c.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/5d8fbcde-9d0e-4267-a709-8f884e8d8c4c.png)
+
 
 使用`Rouyan`的流程是这样的：
 
@@ -32,28 +33,28 @@ flowchart LR
 ```
 
 
-![](https://files.mdnice.com/user/50031/1765733d-3ae3-4a61-aa9c-7727f4b0cb3c.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/1765733d-3ae3-4a61-aa9c-7727f4b0cb3c.png)
 
 **实际使用过程**
 
 打开`Rouyan`，先选择翻译内容要保存至的文件：
 
 
-![](https://files.mdnice.com/user/50031/aac3f5ff-63f3-4a26-b430-0e9fcd048ec1.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/aac3f5ff-63f3-4a26-b430-0e9fcd048ec1.png)
 
 复制想要翻译的文本：
 
-![](https://files.mdnice.com/user/50031/95addc5e-b580-45b4-bb6c-da3a954e01bb.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/95addc5e-b580-45b4-bb6c-da3a954e01bb.png)
 
 按下`Tab + K`快捷键：
 
 出现等待窗体：
 
-![](https://files.mdnice.com/user/50031/71819737-0689-46c3-a418-4060f0279580.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/71819737-0689-46c3-a418-4060f0279580.png)
 
 翻译内容直接写入文件：
 
-![](https://files.mdnice.com/user/50031/606ee1d1-ba88-40af-a2a9-4608fa95b56c.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/606ee1d1-ba88-40af-a2a9-4608fa95b56c.png)
 
 **2、直接流式显示**
 
@@ -61,7 +62,7 @@ flowchart LR
 
 还是一样复制文本，按下`Tab + L`即可流式显示翻译内容：
 
-![](https://files.mdnice.com/user/50031/cf3b6872-23cb-495d-8515-f556e8b63868.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/cf3b6872-23cb-495d-8515-f556e8b63868.png)
 
 **3、解释图表**
 
@@ -69,15 +70,15 @@ flowchart LR
 
 随便截图一张：
 
-![](https://files.mdnice.com/user/50031/b8dd5b07-4eda-4c19-8eec-4c1b701be409.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/b8dd5b07-4eda-4c19-8eec-4c1b701be409.png)
 
 按下`Tab + D`流式解释图表内容：
 
-![](https://files.mdnice.com/user/50031/bce19b62-5f6b-419a-b79e-9df35142f23b.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/bce19b62-5f6b-419a-b79e-9df35142f23b.png)
 
 当然你也可以扩展自己的功能，目前`Rouyan`的设计是这样的，总共有8个快捷键绑定，可以从关于页面看到：
 
-![](https://files.mdnice.com/user/50031/7a928f92-97ca-4481-9a1b-7ee6208626c9.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/7a928f92-97ca-4481-9a1b-7ee6208626c9.png)
 
 **如何增加基于提示词的扩展功能**
 
@@ -87,31 +88,31 @@ flowchart LR
 
 首先我们看当前`Rouyan`的提示词管理：
 
-![](https://files.mdnice.com/user/50031/6acd7bfb-d810-42c0-af9a-a41910ae4775.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/6acd7bfb-d810-42c0-af9a-a41910ae4775.png)
 
 打开PromptConfig.txt：
 
-![](https://files.mdnice.com/user/50031/22f53e2c-9929-4ba2-8807-6cf7e4370771.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/22f53e2c-9929-4ba2-8807-6cf7e4370771.png)
 
 这里配置了LLM与VLM的两个提示词分别是什么。
 
 现在我们在LLMPrompts新增一个03.txt：
 
-![](https://files.mdnice.com/user/50031/74687e7c-387a-4915-ad8e-e70dce4cefef.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/74687e7c-387a-4915-ad8e-e70dce4cefef.png)
 
 打开`Rouyan`来到提示词管理界面：
 
-![](https://files.mdnice.com/user/50031/fbb73699-1fb7-4f59-9e07-290709254336.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/fbb73699-1fb7-4f59-9e07-290709254336.png)
 
 可以看到我们刚刚增加的提示词，然后将其设置为LLM提示词2。
 
 会发现PromptConfig.txt中已经改了：
 
-![](https://files.mdnice.com/user/50031/3c0c5b8e-1991-48fa-9f41-5e9b9c7e0cca.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/3c0c5b8e-1991-48fa-9f41-5e9b9c7e0cca.png)
 
 现在按`Tab + I`即可使用了：
 
-![](https://files.mdnice.com/user/50031/2dd9db35-98ff-4a33-bf49-9290ab1fa754.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/2dd9db35-98ff-4a33-bf49-9290ab1fa754.png)
 
 ## Rouyan安装使用
 
@@ -121,7 +122,7 @@ flowchart LR
 
 下载地址：https://github.com/Ming-jiayou/Rouyan/releases/tag/Rouyan-v1.0.0
 
-![](https://files.mdnice.com/user/50031/8a88dc3b-cce5-4cd3-a3c4-74e5e3a0d8ae.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/8a88dc3b-cce5-4cd3-a3c4-74e5e3a0d8ae.png)
 
 第一个包含了.net8框架，剩下两个不包含，如果提示没有安装.net8，安装一下即可。
 
@@ -130,6 +131,6 @@ flowchart LR
 如果不方便访问GitHub，可以向公众号发送Rouyan，获取网盘链接。
 
 
-![](https://files.mdnice.com/user/50031/6c6621b7-c58e-47f4-b460-0fd65d9498cb.png)
+![](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/6c6621b7-c58e-47f4-b460-0fd65d9498cb.png)
 
 在设置页面填入apikey即可，如果没有额度，可以使用免费模型，智谱有免费的LLM与VLM可以用。
