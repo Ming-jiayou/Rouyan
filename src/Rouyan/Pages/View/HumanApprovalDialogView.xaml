@@ -11,6 +11,10 @@
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         Topmost="True">
+    <Window.InputBindings>
+        <KeyBinding Command="{s:Action Approve}" Key="Y"/>
+        <KeyBinding Command="{s:Action Reject}" Key="N"/>
+    </Window.InputBindings>
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -32,7 +36,7 @@
             </Grid.ColumnDefinitions>
 
             <Button Grid.Column="0"
-                    Content="同意"
+                    Content="同意(Y)"
                     Width="100"
                     Height="30"
                     HorizontalAlignment="Left"
@@ -40,7 +44,7 @@
                     Command="{s:Action Approve}"/>
 
             <Button Grid.Column="1"
-                    Content="拒绝"
+                    Content="拒绝(N)"
                     Width="100"
                     Height="30"
                     HorizontalAlignment="Right"
