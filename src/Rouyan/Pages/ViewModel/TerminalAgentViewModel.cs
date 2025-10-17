@@ -100,7 +100,6 @@ public class TerminalAgentViewModel : Screen
         AgentThread thread = agent.GetNewThread();
 
         var response = await agent.RunAsync(InputText, thread);
-        OutputText = response.Text;
         var userInputRequests = response.UserInputRequests.ToList();
 
         // For streaming use:
@@ -133,7 +132,7 @@ public class TerminalAgentViewModel : Screen
         }
 
         // Invoke the agent with streaming support.
-        await foreach (var update in agent.RunStreamingAsync("输出最终回答",thread))
+        await foreach (var update in agent.RunStreamingAsync("输出最终答案",thread))
         {
             OutputText += update.Text;
         }
