@@ -122,19 +122,14 @@ public class TerminalAgentViewModel : Screen
             }
 
             // Pass the user input responses back to the agent for further processing.
-            // response = await agent.RunAsync(userInputResponses, thread);
+            response = await agent.RunAsync(userInputResponses, thread);
+            userInputRequests = response.UserInputRequests.ToList();          
+        }
 
-            //AsyncCollectionResult<StreamingChatCompletionUpdate> completionUpdates = agent.RunStreamingAsync("nihao");
-            //await foreach (StreamingChatCompletionUpdate completionUpdate in completionUpdates)
-            //{
-            //    if (completionUpdate.ContentUpdate.Count > 0)
-            //    {
-            //        OutputText += completionUpdate.ContentUpdate[0].Text;
-            //    }
-            //}
-
-            var updates = await agent.RunStreamingAsync(userInputResponses, thread).ToAgentRunResponseAsync();
-            userInputRequests = updates.UserInputRequests.ToList();
+        // Invoke the agent with streaming support.
+        await foreach (var update in agent.RunStreamingAsync("输出最终回答",thread))
+        {
+            OutputText += update.Text;
         }
     }
 }
