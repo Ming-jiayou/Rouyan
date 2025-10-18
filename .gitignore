@@ -329,4 +329,5 @@ ASALocalRun/
 **/bin/
 **/obj/
 **/.vs/
+**/.claude/
 *.env

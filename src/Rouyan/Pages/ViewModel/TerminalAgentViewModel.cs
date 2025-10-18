@@ -116,7 +116,7 @@ public class TerminalAgentViewModel : Screen
             waitingVm = new WaitingViewModel { Text = "正在分析请求，请稍候..." };
             _windowManager.ShowWindow(waitingVm);
 
-            // 使用大语言模型翻译文本
+            // 配置AI Agent
             DotEnv.Load();
             var envVars = DotEnv.Read();
 

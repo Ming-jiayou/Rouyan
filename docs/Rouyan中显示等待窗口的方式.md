@@ -1,136 +1,384 @@
-# Rouyan 中如何显示等待窗口
+# Rouyan中显示等待窗口的方式
 
-本文说明项目中“等待窗口（Waiting）”的定义、依赖、数据绑定与典型显示方式，帮助在长耗时任务期间以一致的 UI 反馈用户。
+## 前言
 
-## 概览
-- 等待窗口视图文件：[WaitingView.xaml](src/Rouyan/Pages/View/WaitingView.xaml)
-- 视图代码隐藏：[WaitingView.xaml.cs](src/Rouyan/Pages/View/WaitingView.xaml.cs:7)
-- 视图模型（绑定文案）：[WaitingViewModel.Text](src/Rouyan/Pages/ViewModel/WaitingViewModel.cs:10)
-- 主题/样式依赖（MaterialDesign）：[BundledTheme](src/Rouyan/App.xaml:27), [MaterialDesign3.Defaults.xaml](src/Rouyan/App.xaml:28)
+在WPF应用开发中，<span style="color: dodgerblue;">等待窗口（Waiting Window）</span>是提升用户体验的重要组件。当应用执行耗时操作（如网络请求、数据处理、AI对话等）时，通过显示等待窗口可以向用户传达"程序正在工作"的信息，避免用户误以为程序卡死。本文以Rouyan为例，详细说明如何在WPF应用中实现一个美观且实用的等待窗口。
 
-## 等待窗口视图定义（WaitingView.xaml）
-等待窗口由 WPF 窗口定义，核心属性如下：
-- 窗口类型与类声明：[Window x:Class="Rouyan.Pages.View.WaitingView"](src/Rouyan/Pages/View/WaitingView.xaml:1)
-- 标题：[Title](src/Rouyan/Pages/View/WaitingView.xaml:9) = "WaitingWindow"
-- 尺寸：[Height](src/Rouyan/Pages/View/WaitingView.xaml:10) = 200、[Width](src/Rouyan/Pages/View/WaitingView.xaml:11) = 350
-- 样式：设为工具窗口 [WindowStyle="ToolWindow"](src/Rouyan/Pages/View/WaitingView.xaml:12)、不允许调整大小 [ResizeMode="NoResize"](src/Rouyan/Pages/View/WaitingView.xaml:14)
-- 显示位置：居中屏幕 [WindowStartupLocation="CenterScreen"](src/Rouyan/Pages/View/WaitingView.xaml:13)
-- 置顶显示：[Topmost="True"](src/Rouyan/Pages/View/WaitingView.xaml:15)
+## 等待窗口的重要性
 
-视觉元素：
-- 顶部文案区绑定视图模型的文案属性：[Text="{Binding Text}"](src/Rouyan/Pages/View/WaitingView.xaml:26)
-- 使用 MaterialDesign 的圆形不定进度条样式：[Style="{StaticResource MaterialDesignCircularProgressBar}"](src/Rouyan/Pages/View/WaitingView.xaml:37)，前景色来自主题色：[SecondaryHueMidBrush](src/Rouyan/Pages/View/WaitingView.xaml:38)
-- 底部辅助提示文案“请稍候...”：[Text="请稍候..."](src/Rouyan/Pages/View/WaitingView.xaml:43)
+在Rouyan中，等待窗口主要用于以下场景：
 
-代码隐藏仅负责初始化组件：
-- 构造函数：[WaitingView.WaitingView()](src/Rouyan/Pages/View/WaitingView.xaml.cs:7)
+*1、LLM对话等待：调用大语言模型API时的响应等待*
 
-## 视图模型（WaitingViewModel）
-等待窗口的文案来自视图模型的 Text 属性：
-- 默认文案：[public string Text { get; set; } = "处理中...";](src/Rouyan/Pages/ViewModel/WaitingViewModel.cs:10)
+*2、图像处理：VLM（视觉语言模型）分析图片内容*
 
-提示：
-- 若需要在任务执行过程中动态更新 Text（例如显示不同阶段提示），建议将 Text 改为带通知的属性（使用 Stylet 的 SetAndNotify），例如：
-  - private string _text; public string Text { get => _text; set => SetAndNotify(ref _text, value); }
-  以上写法可参考项目中其它使用 SetAndNotify 的模式，例如 [HumanApprovalDialogViewModel.Title](src/Rouyan/Pages/ViewModel/HumanApprovalDialogViewModel.cs:14)。
+*3、文件操作：读取配置、写入翻译结果等IO操作*
 
-## 样式与主题依赖（MaterialDesign）
-等待窗口使用的颜色资源与进度条样式来自 MaterialDesign 主题，已在应用级资源中合并：
-- 主题注入：[materialDesign:BundledTheme](src/Rouyan/App.xaml:27)
-- 默认样式字典：[MaterialDesign3.Defaults.xaml](src/Rouyan/App.xaml:28)
+*4、网络请求：与各种AI服务的通信*
 
-因此，无需在等待窗口内重复引入样式字典，即可使用：
-- PrimaryHueMidBrush、SecondaryHueMidBrush、MaterialDesignBody
-- MaterialDesignCircularProgressBar
+## 设计理念
 
-## 显示等待窗口的典型方式
+Rouyan的等待窗口设计遵循以下原则：
 
-说明：WaitingView 当前未在仓库中直接调用（未检索到 new WaitingView/ShowDialog 的现用代码），以下给出两种推荐调用模式。请按业务需要选择阻塞（模态）或非阻塞（无模式）显示。
+*1、**简洁明了**：避免过多装饰，专注于传达等待状态*
 
-### 方式一：非阻塞显示（推荐，适合后台执行任务）
-- 适用场景：在 UI 线程上立即反馈等待窗口，同时后台线程执行耗时工作，完成后关闭窗口。
-- 要点：窗口通过 Show() 非模态显示；耗时工作通过 Task.Run 执行；完成后在 UI 线程 Close()。
+*2、**视觉吸引**：使用Material Design风格的动画效果*
 
-示例（可在任意触发点调用，如命令处理、按钮事件等）：
+*3、**信息丰富**：可自定义等待文案，告知用户具体在做什么*
+
+*4、**用户友好**：始终置顶显示，不会被其他窗口遮挡*
+
+## 具体实现
+
+### 第一步：创建等待窗口视图模型
+
+**WaitingViewModel**非常简洁，只包含一个显示文本属性：
+
 ```csharp
-using System.Threading.Tasks;
-using System.Windows;
-using Rouyan.Pages.View;
-using Rouyan.Pages.ViewModel;
-
-public async Task RunWithWaitingAsync()
+public class WaitingViewModel : Screen
 {
-    var vm = new WaitingViewModel { Text = "处理中，请稍候..." };
-    var waiting = new WaitingView { DataContext = vm };
+    public string Text { get; set; } = "处理中...";
+}
+```
 
-    waiting.Show(); // 非模态显示，UI 不被阻塞
+设计要点：
 
+- **继承Screen**：使用Stylet框架的Screen基类，便于窗口管理
+- **简单属性**：Text属性用于显示自定义等待信息
+- **默认文案**："处理中..."作为通用提示
+
+### 第二步：设计等待窗口界面
+
+**WaitingView.xaml**采用Material Design风格：
+
+```xaml
+<Window x:Class="Rouyan.Pages.View.WaitingView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        Title="WaitingWindow"
+        Height="200"
+        Width="350"
+        WindowStyle="ToolWindow"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Topmost="True">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 顶部标题区域 -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource PrimaryHueMidBrush}"
+                Padding="16 8">
+            <TextBlock HorizontalAlignment="Center"
+                       Text="{Binding Text}"
+                       FontSize="16"/>
+        </Border>
+
+        <!-- 进度条区域 -->
+        <StackPanel Grid.Row="1"
+                    Orientation="Vertical"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Margin="20">
+
+            <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
+                         Foreground="{DynamicResource SecondaryHueMidBrush}"
+                         Width="60"
+                         Height="60"
+                         IsIndeterminate="True"/>
+
+            <TextBlock Text="请稍候..."
+                       FontSize="14"
+                       HorizontalAlignment="Center"
+                       Foreground="{DynamicResource MaterialDesignBody}"
+                       Margin="0,10,0,0"/>
+
+        </StackPanel>
+    </Grid>
+</Window>
+```
+
+界面特点：
+
+- **Material Design风格**：使用圆形进度条和主题色彩
+- **居中显示**：`WindowStartupLocation="CenterScreen"`
+- **工具窗口**：`WindowStyle="ToolWindow"`减少标题栏高度
+- **始终置顶**：`Topmost="True"`确保不被遮挡
+- **不可调整大小**：`ResizeMode="NoResize"`保持固定尺寸
+
+### 第三步：在业务逻辑中使用等待窗口
+
+Rouyan在多个场景中使用了等待窗口，以`HomeViewModel.cs:122`中的LLM调用为例：
+
+```csharp
+public async Task RunLLMPrompt1()
+{
     try
     {
-        await Task.Run(() =>
+        await EnsurePromptsLoadedAsync();
+
+        // 显示等待窗口
+        var waitingViewModel = container.Get<WaitingViewModel>();
+        windowManager.ShowWindow(waitingViewModel);
+
+        // 获取剪切板文本
+        string clipboardText = string.Empty;
+        await Application.Current.Dispatcher.InvokeAsync(() =>
         {
-            // TODO: 在后台执行长耗时任务
-            System.Threading.Thread.Sleep(3000);
+            ClipboardText = string.Empty;
+            if (Clipboard.ContainsText())
+            {
+                clipboardText = Clipboard.GetText();
+                ClipboardText = clipboardText;
+            }
         });
-    }
-    finally
-    {
-        // 关闭等待窗口，确保在 UI 线程调用
-        if (waiting.IsVisible)
+
+        if (string.IsNullOrEmpty(clipboardText))
         {
-            if (!waiting.Dispatcher.CheckAccess())
-                waiting.Dispatcher.Invoke(() => waiting.Close());
-            else
-                waiting.Close();
+            MessageBox.Show("剪贴板中没有文本内容", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
         }
+
+        // 调用LLM API进行处理
+        DotEnv.Load();
+        var envVars = DotEnv.Read();
+        ApiKeyCredential apiKeyCredential = new ApiKeyCredential(envVars["OPENAI_API_KEY"]);
+
+        OpenAIClientOptions openAIClientOptions = new OpenAIClientOptions();
+        openAIClientOptions.Endpoint = new Uri(envVars["OPENAI_BASE_URL"]);
+
+        IChatClient client = new OpenAI.Chat.ChatClient(envVars["OPENAI_CHAT_MODEL"], apiKeyCredential, openAIClientOptions)
+                           .AsIChatClient();
+
+        var ChatClient = new ChatClientBuilder(client)
+             .UseFunctionInvocation()
+             .Build();
+
+        var LLMPrompt1 = promptService.CurrentLLMPrompt1;
+
+        IList<Microsoft.Extensions.AI.ChatMessage> Messages =
+           [
+               new(ChatRole.System, $"{LLMPrompt1}"),
+           ];
+
+        Messages.Add(new(ChatRole.User, ClipboardText));
+
+        var response = await ChatClient.GetResponseAsync(Messages);
+
+        // 将结果写入文件
+        if (!string.IsNullOrEmpty(SelectedFilePath))
+        {
+            try
+            {
+                await File.AppendAllTextAsync(SelectedFilePath, response.Text + Environment.NewLine);
+            }
+            catch (Exception ex)
+            {
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    MessageBox.Show($"写入文件失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                });
+            }
+        }
+
+        // 关闭等待窗口
+        waitingViewModel.RequestClose();
+    }
+    catch (Exception ex)
+    {
+        await Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            MessageBox.Show($"执行操作时出错：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        });
     }
 }
 ```
 
-动态更新文案（若 Text 支持通知）：
+使用模式说明：
+
+1. **显示等待窗口**：在耗时操作开始前显示
+2. **执行业务逻辑**：进行实际的耗时操作
+3. **关闭等待窗口**：操作完成或异常时关闭
+
+### 第四步：自定义等待信息
+
+在不同场景中，可以自定义等待窗口的显示文案：
+
 ```csharp
-vm.Text = "正在下载数据...";
+// 终端Agent中的使用示例
+waitingVm = new WaitingViewModel { Text = "正在分析请求，请稍候..." };
+_windowManager.ShowWindow(waitingVm);
 ```
 
-### 方式二：模态显示（阻塞，简单流程）
-- 适用场景：任务必须阻塞当前交互，且希望用 ShowDialog() 形成简单的阻塞流程。
-- 要点：ShowDialog() 会阻塞当前调用线程；通常配合后台任务并在任务完成时从其它上下文关闭窗口。
+**不同场景的文案示例**：
 
-示例：
+- 文本翻译：`"正在翻译文本，请稍候..."`
+- 图像分析：`"正在分析图像，请稍候..."`
+- 文件操作：`"正在保存文件，请稍候..."`
+- 网络请求：`"正在连接服务器，请稍候..."`
+
+## 依赖与配置
+
+### Material Design依赖
+
+等待窗口使用了Material Design控件和主题，需要在`App.xaml`中配置：
+
+```xaml
+<Application.Resources>
+    <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+            <materialDesign:BundledTheme
+                BaseTheme="Light"
+                PrimaryColor="DeepPurple"
+                SecondaryColor="Lime" />
+            <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign3.Defaults.xaml" />
+        </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+</Application.Resources>
+```
+
+这样配置后，等待窗口就可以使用以下资源：
+
+- `{DynamicResource PrimaryHueMidBrush}`：主要颜色
+- `{DynamicResource SecondaryHueMidBrush}`：次要颜色
+- `{StaticResource MaterialDesignCircularProgressBar}`：圆形进度条样式
+
+### Stylet框架集成
+
+等待窗口通过Stylet的`IWindowManager`进行管理：
+
 ```csharp
-var vm = new WaitingViewModel { Text = "正在执行任务..." };
-var waiting = new WaitingView { DataContext = vm };
+// 通过依赖注入获取
+var waitingViewModel = container.Get<WaitingViewModel>();
 
-// 开一个后台任务执行逻辑，结束时关闭窗口
-_ = Task.Run(() =>
+// 显示窗口
+windowManager.ShowWindow(waitingViewModel);
+
+// 关闭窗口
+waitingViewModel.RequestClose();
+```
+
+## 最佳实践
+
+### 1、异常处理
+
+**始终在finally块中关闭等待窗口**：
+
+```csharp
+WaitingViewModel? waitingVm = null;
+try
 {
-    // TODO: 长耗时任务
-    System.Threading.Thread.Sleep(3000);
+    waitingVm = new WaitingViewModel { Text = "处理中..." };
+    _windowManager.ShowWindow(waitingVm);
 
-    // 任务结束后关闭等待窗口（切回 UI 线程）
-    waiting.Dispatcher.Invoke(() => waiting.Close());
-});
-
-// 模态显示（阻塞当前调用栈，直到窗口被关闭）
-waiting.ShowDialog();
+    // 执行耗时操作
+    await DoSomethingAsync();
+}
+finally
+{
+    waitingVm?.RequestClose();
+}
 ```
 
-注意：如果在 UI 线程直接执行耗时任务且同步调用 ShowDialog()，会造成界面卡顿，应避免。正确做法是让耗时任务在后台线程执行，并在任务结束时关闭窗口。
+### 2、UI线程考虑
 
-## 关闭与异常处理建议
-- 始终在 finally 中关闭等待窗口，确保异常情况下也能释放 UI。
-- 关闭窗口需在 UI 线程执行（使用 Dispatcher.Invoke()）。
-- 如果用户可能中途取消（例如额外提供取消按钮），请在取消逻辑中同样确保关闭窗口。
+**确保在UI线程上操作窗口**：
 
-## 常见问题
-- 动态更新文案未生效：请将 Text 改为带通知的属性（SetAndNotify），并在 UI 线程更新。
-- 窗口遮挡问题：等待窗口已设置 [Topmost](src/Rouyan/Pages/View/WaitingView.xaml:15)，一般可避免被遮挡；若需跟随主窗体居中，可改为 CenterOwner 并设置 Owner。
-- 样式引用失败：确认应用级资源中已合并 MaterialDesign 主题，[BundledTheme](src/Rouyan/App.xaml:27) 与 [Defaults](src/Rouyan/App.xaml:28) 未被移除/更改。
-- 与主窗体交互：非模态显示时主窗体不被阻塞；如需阻塞交互，使用模态 ShowDialog()。
+```csharp
+// 如果在非UI线程中，需要调度到UI线程
+Application.Current.Dispatcher.Invoke(() =>
+{
+    waitingViewModel.RequestClose();
+});
+```
 
-## 相关文件索引
-- 视图定义：[WaitingView.xaml](src/Rouyan/Pages/View/WaitingView.xaml)
-  - [Title](src/Rouyan/Pages/View/WaitingView.xaml:9)、[Topmost](src/Rouyan/Pages/View/WaitingView.xaml:15)、[MaterialDesignCircularProgressBar](src/Rouyan/Pages/View/WaitingView.xaml:37)、[Text 绑定](src/Rouyan/Pages/View/WaitingView.xaml:26)
-- 视图代码隐藏：[WaitingView.WaitingView()](src/Rouyan/Pages/View/WaitingView.xaml.cs:7)
-- 视图模型文案：[WaitingViewModel.Text](src/Rouyan/Pages/ViewModel/WaitingViewModel.cs:10)
-- 主题资源：[BundledTheme](src/Rouyan/App.xaml:27)、[MaterialDesign3.Defaults.xaml](src/Rouyan/App.xaml:28)
+### 3、用户取消支持
+
+**对于长时间操作，考虑提供取消机制**：
+
+```csharp
+private CancellationTokenSource? _cts;
+
+public async Task LongRunningTask()
+{
+    _cts = new CancellationTokenSource();
+
+    try
+    {
+        var waitingVm = new WaitingViewModel { Text = "正在处理，点击取消可中断..." };
+        _windowManager.ShowWindow(waitingVm);
+
+        await DoLongOperationAsync(_cts.Token);
+    }
+    catch (OperationCanceledException)
+    {
+        // 用户取消了操作
+    }
+    finally
+    {
+        waitingVm?.RequestClose();
+    }
+}
+
+public void Cancel()
+{
+    _cts?.Cancel();
+}
+```
+
+## 扩展建议
+
+### 1、进度显示
+
+如果需要显示具体进度，可以扩展WaitingViewModel：
+
+```csharp
+public class WaitingViewModel : Screen
+{
+    private string _text = "处理中...";
+    public string Text
+    {
+        get => _text;
+        set => SetAndNotify(ref _text, value);
+    }
+
+    private double _progress = 0;
+    public double Progress
+    {
+        get => _progress;
+        set => SetAndNotify(ref _progress, value);
+    }
+
+    private bool _isIndeterminate = true;
+    public bool IsIndeterminate
+    {
+        get => _isIndeterminate;
+        set => SetAndNotify(ref _isIndeterminate, value);
+    }
+}
+```
+
+### 2、多种样式
+
+可以根据不同场景提供不同的等待窗口样式：
+
+- **简单等待**：只有进度条和文字
+- **详细等待**：包含操作步骤列表
+- **带图标等待**：根据操作类型显示相应图标
+
+## 总结
+
+Rouyan的等待窗口实现具有以下优点：
+
+- **设计美观**：采用Material Design风格，视觉效果佳
+- **使用简单**：通过Stylet框架轻松管理窗口生命周期
+- **功能完善**：支持自定义文案，适应不同使用场景
+- **用户友好**：始终置顶显示，避免被遮挡
+
+这种实现方式为WPF应用提供了良好的用户等待体验，值得在类似项目中借鉴和应用。
+
+项目地址：https://github.com/Ming-jiayou/Rouyan
