@@ -47,6 +47,7 @@ public class TerminalAgentViewModel : Screen
     }
 
     private CancellationTokenSource? _cts;
+    private AgentThread thread;
     private bool _isRunning;
     public bool IsRunning
     {
@@ -63,11 +64,6 @@ public class TerminalAgentViewModel : Screen
 
     public bool CanRun => !_isRunning;
     public bool CanCancel => _isRunning;
-
-    public void Cancel()
-    {
-        _cts?.Cancel();
-    }
 
     #region AI Function
     [Description("Execute a Windows cmd.exe script and return its output.")]
@@ -168,9 +164,11 @@ public class TerminalAgentViewModel : Screen
                 .CreateAIAgent(instructions: "你是一个乐于助人的助手，可以执行命令行脚本也可以获取网页内容。请使用中文回答。",
                 tools: [new ApprovalRequiredAIFunction(AIFunctionFactory.Create(ExecuteCmd)),
                         new ApprovalRequiredAIFunction(AIFunctionFactory.Create(GetWebPageContent))]);
-
-            // Call the agent and check if there are any user input requests to handle.
-            AgentThread thread = agent.GetNewThread();
+          
+            if (thread == null)
+            {
+                thread = agent.GetNewThread();
+            }
 
             var response = await agent.RunAsync(InputText, thread);
             var userInputRequests = response.UserInputRequests.ToList();
@@ -257,6 +255,17 @@ public class TerminalAgentViewModel : Screen
             _cts?.Dispose();
             _cts = null;
         }
+    }
+
+    public void Cancel()
+    {
+        _cts?.Cancel();
+    }
+
+    public void ClearContext()
+    {
+        OutputText = string.Empty;
+        thread = null;
     }
 
 

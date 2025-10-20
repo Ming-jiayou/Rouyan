@@ -37,6 +37,12 @@
                     FontSize="16"
                     Width="120"
                     Height="36"/>
+            <Button Content="清空上下文"
+                    Command="{s:Action ClearContext}"
+                    FontSize="16"
+                    Width="120"
+                    Height="36"
+                    Margin="8,0,0,0"/>
         </StackPanel>
 
         <TextBox Grid.Row="2"
