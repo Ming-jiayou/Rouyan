@@ -9,8 +9,10 @@ using System;
 using System.ClientModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,7 +34,7 @@ public class TerminalAgentViewModel : Screen
     }
 
 #pragma warning disable MEAI001
-    private string _inputText = "获取当前时间";
+    private string _inputText = "获取https://learn.microsoft.com/en-us/agent-framework/tutorials/workflows/simple-sequential-workflow?pivots=programming-language-csharp的内容 将其主体部分翻译为中文 并形成一份md文档 保存至目录C:\\Users\\Maxwell\\Desktop\\2025.10";
     public string InputText
     {
         get => _inputText;
@@ -127,6 +129,144 @@ public class TerminalAgentViewModel : Screen
             return $"获取网页内容失败: {ex.Message}";
         }
     }
+
+    [Description("创建一个新文件")]
+    static string CreateFile([Description("要创建的文件路径")] string filePath)
+    {
+        try
+        {
+            // 确保目录存在
+            var directory = Path.GetDirectoryName(filePath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            // 创建文件
+            using (var fileStream = File.Create(filePath))
+            {
+                // 文件创建后立即关闭，创建空文件
+            }
+
+            return $"文件创建成功: {filePath}";
+        }
+        catch (Exception ex)
+        {
+            return $"创建文件失败: {ex.Message}";
+        }
+    }
+
+    [Description("删除指定文件")]
+    static string DeleteFile([Description("要删除的文件路径")] string filePath)
+    {
+        try
+        {
+            if (!File.Exists(filePath))
+            {
+                return $"文件不存在: {filePath}";
+            }
+
+            File.Delete(filePath);
+            return $"文件删除成功: {filePath}";
+        }
+        catch (Exception ex)
+        {
+            return $"删除文件失败: {ex.Message}";
+        }
+    }
+
+    [Description("向指定文件写入内容")]
+    static string WriteToFile([Description("要写入的文件路径")] string filePath,
+                              [Description("要写入的内容")] string content,
+                              [Description("写入模式：'overwrite'覆盖文件，'append'追加到文件末尾，默认为overwrite")] string mode = "overwrite")
+    {
+        try
+        {
+            // 确保目录存在
+            var directory = Path.GetDirectoryName(filePath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            // 确定写入模式
+            var isAppend = mode.ToLower() == "append";
+
+            // 写入文件
+            using (var writer = new StreamWriter(filePath, isAppend, Encoding.UTF8))
+            {
+                writer.Write(content);
+            }
+
+            return $"内容写入成功: {filePath} (模式: {mode})";
+        }
+        catch (Exception ex)
+        {
+            return $"写入文件失败: {ex.Message}";
+        }
+    }
+
+    [Description("读取指定文件的内容")]
+    static string ReadFile([Description("要读取的文件路径")] string filePath)
+    {
+        try
+        {
+            if (!File.Exists(filePath))
+            {
+                return $"文件不存在: {filePath}";
+            }
+
+            string content = File.ReadAllText(filePath, Encoding.UTF8);
+            return content;
+        }
+        catch (Exception ex)
+        {
+            return $"读取文件失败: {ex.Message}";
+        }
+    }
+
+    [Description("检查文件或目录是否存在")]
+    static string CheckPathExists([Description("要检查的文件或目录路径")] string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+            {
+                return $"文件存在: {path}";
+            }
+            else if (Directory.Exists(path))
+            {
+                return $"目录存在: {path}";
+            }
+            else
+            {
+                return $"路径不存在: {path}";
+            }
+        }
+        catch (Exception ex)
+        {
+            return $"检查路径失败: {ex.Message}";
+        }
+    }
+
+    [Description("创建目录")]
+    static string CreateDirectory([Description("要创建的目录路径")] string directoryPath)
+    {
+        try
+        {
+            if (Directory.Exists(directoryPath))
+            {
+                return $"目录已存在: {directoryPath}";
+            }
+
+            Directory.CreateDirectory(directoryPath);
+            return $"目录创建成功: {directoryPath}";
+        }
+        catch (Exception ex)
+        {
+            return $"创建目录失败: {ex.Message}";
+        }
+    }
     #endregion
 
     public async Task Run()
@@ -161,9 +301,16 @@ public class TerminalAgentViewModel : Screen
 
             AIAgent agent = new OpenAIClient(apiKeyCredential, openAIClientOptions)
                 .GetChatClient(model)
-                .CreateAIAgent(instructions: "你是一个乐于助人的助手，可以执行命令行脚本也可以获取网页内容。请使用中文回答。",
+                .CreateAIAgent(instructions: "你是一个乐于助人的助手，可以执行命令行脚本、获取网页内容，以及进行文件操作（创建、删除、读写文件等）。请使用中文回答。",
                 tools: [new ApprovalRequiredAIFunction(AIFunctionFactory.Create(ExecuteCmd)),
-                        new ApprovalRequiredAIFunction(AIFunctionFactory.Create(GetWebPageContent))]);
+                        new ApprovalRequiredAIFunction(AIFunctionFactory.Create(GetWebPageContent)),
+                        new ApprovalRequiredAIFunction(AIFunctionFactory.Create(CreateFile)),
+                        new ApprovalRequiredAIFunction(AIFunctionFactory.Create(DeleteFile)),
+                        new ApprovalRequiredAIFunction(AIFunctionFactory.Create(WriteToFile)),
+                        new ApprovalRequiredAIFunction(AIFunctionFactory.Create(ReadFile)),
+                        new ApprovalRequiredAIFunction(AIFunctionFactory.Create(CheckPathExists)),
+                        new ApprovalRequiredAIFunction(AIFunctionFactory.Create(CreateDirectory))
+                        ]);
           
             if (thread == null)
             {
@@ -207,6 +354,44 @@ public class TerminalAgentViewModel : Screen
                         {
                             var webUrl = GetArg("url", string.Empty);
                             functionInfo = $"获取网页内容：\n{webUrl}";
+                            break;
+                        }
+                        case "CreateFile":
+                        {
+                            var filePath = GetArg("filePath", string.Empty);
+                            functionInfo = $"创建文件：\n{filePath}";
+                            break;
+                        }
+                        case "DeleteFile":
+                        {
+                            var filePath = GetArg("filePath", string.Empty);
+                            functionInfo = $"删除文件：\n{filePath}";
+                            break;
+                        }
+                        case "WriteToFile":
+                        {
+                            var filePath = GetArg("filePath", string.Empty);
+                            var content = GetArg("content", string.Empty);
+                            var mode = GetArg("mode", "overwrite");
+                            functionInfo = $"写入文件：\n路径: {filePath}\n模式: {mode}\n内容预览: {(content.Length > 100 ? content.Substring(0, 100) + "..." : content)}";
+                            break;
+                        }
+                        case "ReadFile":
+                        {
+                            var filePath = GetArg("filePath", string.Empty);
+                            functionInfo = $"读取文件：\n{filePath}";
+                            break;
+                        }
+                        case "CheckPathExists":
+                        {
+                            var path = GetArg("path", string.Empty);
+                            functionInfo = $"检查路径是否存在：\n{path}";
+                            break;
+                        }
+                        case "CreateDirectory":
+                        {
+                            var directoryPath = GetArg("directoryPath", string.Empty);
+                            functionInfo = $"创建目录：\n{directoryPath}";
                             break;
                         }
                         default:
