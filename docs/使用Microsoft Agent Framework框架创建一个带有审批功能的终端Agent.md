@@ -1,46 +1,66 @@
-# 使用Microsoft Agent Framework框架创建一个带有审批功能的终端Agent
+# WPF/C#：使用Microsoft Agent Framework框架创建一个带有审批功能的终端Agent
 
 ## 前言
 
-在AI辅助开发领域，<span style="color: dodgerblue;">Microsoft Agent Framework</span>为我们提供了强大的工具来构建智能Agent。对于需要执行敏感操作（如系统命令）的场景，人工审批机制显得尤为重要。本文以Rouyan为例，说明如何使用Microsoft Agent Framework创建一个能够执行终端命令并具备人工审批功能的WPF应用。
+最近新出了一个Microsoft Agent Framework框架，我感觉还挺有意思的，就通过它的那个`Using function tools with human in the loop approvals`例子，做了一个终端助手Agent。我觉得使用这个作为学习人在环上这个例子蛮合适的，因为对于需要执行敏感操作（如系统命令）的场景，人工审批机制显得尤为重要。本文以Rouyan为例，说明如何使用Microsoft Agent Framework创建一个能够执行终端命令并具备人工审批功能的WPF应用。
 
-## Microsoft Agent Framework简介
+在详细介绍之前，先来看看它的效果。
 
-<span style="color: dodgerblue;">Microsoft Agent Framework</span>是微软推出的AI Agent开发框架，它提供了：
+1、比如获取当前时间
 
-*1、AIAgent：核心Agent类，支持工具调用和流式响应*
+会先弹出一个人工审批窗口：
 
-*2、AgentThread：管理对话上下文和状态*
+![image-20251017213637660](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/image-20251017213637660.png)
 
-*3、Function调用：支持自定义函数和工具集成*
+然后你点击同意了才会执行：
 
-*4、审批机制：内置的人工审批流程支持*
+![image-20251017213716893](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/image-20251017213716893.png)
 
-Microsoft Agent Framework项目地址：*https://github.com/microsoft/agents*
+如果你拒绝了就是这样：
 
-## 核心架构设计
+![image-20251017213755043](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/image-20251017213755043.png)
 
-Rouyan中的终端Agent采用了以下架构：
+实际上你可以利用终端做很多事情，我再举一个例子。
 
-```
-用户输入 → AI分析 → 生成命令 → 人工审批 → 执行命令 → 返回结果
-```
+2、新建一个文件，写入你好：
 
-关键组件包括：
+![image-20251017214320364](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/image-20251017214320364.png)
 
-*1、**TerminalAgentViewModel**：主要的业务逻辑控制器*
+选择同意，结果如图所示：
 
-*2、**HumanApprovalDialogViewModel**：审批对话框的数据模型*
+![image-20251017214407194](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/image-20251017214407194.png)
 
-*3、**ExecuteCmd函数**：实际执行命令的工具函数*
+![image-20251017214543527](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/image-20251017214543527.png)
 
-*4、**WaitingViewModel**：等待状态的显示*
+在介绍如何具体实现之前，先来介绍一下Microsoft Agent Framework。
+
+## Microsoft Agent Framework介绍
+
+GitHub上的简介是：“一个用于构建、编排和部署AI代理及多代理工作流程的框架，支持Python和.NET。”
+
+GitHub地址：https://github.com/microsoft/agent-framework
+
+![image-20251017215713327](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/image-20251017215713327.png)
+
+Microsoft Agent Framework 是一个开源开发工具包，用于为 .NET 和 Python 构建 AI 代理和多代理工作流。它整合并扩展了 Semantic Kernel 和 AutoGen 项目的思想，融合了两者的优点，并新增了多项功能。该框架由同一团队开发，将成为未来构建 AI 代理的统一基础。
+
+Agent Framework 提供了两大主要功能类别：
+
+AI 代理：单个代理利用大语言模型（LLM）处理用户输入，调用工具和 MCP 服务器执行操作，并生成响应。代理支持的模型提供商包括 Azure OpenAI、OpenAI 和 Azure AI。
+
+工作流：基于图形的工作流，用于连接多个代理和功能，以执行复杂的多步骤任务。工作流支持基于类型的路由、嵌套、检查点以及适用于人工干预场景的请求/响应模式。
+
+该框架还提供了基础构建模块，包括模型客户端（聊天补全和响应）、用于状态管理的代理线程、用于代理记忆的上下文提供程序、用于拦截代理操作的中间件，以及用于工具集成的MCP客户端。这些组件共同为您提供灵活性和强大功能，以构建交互性强、稳健且安全的AI应用程序。
+
+![image-20251017215856749](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/image-20251017215856749.png)
 
 ## 具体实现
 
-### 第一步：创建AI Agent工具函数
+1、安装Nuget包：
 
-首先定义一个可以执行Windows命令的函数，并使用Microsoft Agent Framework的特性进行标注：
+![image-20251017220544499](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/image-20251017220544499.png)
+
+2、编写运行脚本的函数
 
 ```csharp
 [Description("Execute a Windows cmd.exe script and return its output.")]
@@ -81,43 +101,52 @@ static string ExecuteCmd([Description("The script content to run via 'cmd.exe /c
 }
 ```
 
-关键点：
+3、配置AI Agent
 
-- `[Description]`特性：为AI Agent提供函数说明
-- 参数描述：帮助AI理解如何使用这个函数
-- 错误处理：确保命令执行的安全性
-
-### 第二步：配置AI Agent
-
-在`TerminalAgentViewModel.cs:132`中配置AI Agent：
+文档中只写了Azure中怎么使用，兼容OpenAI格式的可以这样写：
 
 ```csharp
-AIAgent agent = new OpenAIClient(apiKeyCredential, openAIClientOptions)
-    .GetChatClient(model)
-    .CreateAIAgent(
-        instructions: "你是一个乐于助人的助手，可以执行命令行脚本。请使用中文回答。",
-        tools: [new ApprovalRequiredAIFunction(AIFunctionFactory.Create(ExecuteCmd))]
-    );
+ // 配置AI Agent
+ DotEnv.Load();
+ var envVars = DotEnv.Read();
+
+ var apiKey = envVars["OPENAI_API_KEY"];
+ var model = envVars["OPENAI_CHAT_MODEL"];
+ var baseUrl = new Uri(envVars["OPENAI_BASE_URL"]);
+
+ ApiKeyCredential apiKeyCredential = new ApiKeyCredential(apiKey);
+
+ OpenAIClientOptions openAIClientOptions = new OpenAIClientOptions();
+ openAIClientOptions.Endpoint = baseUrl;
+
+ AIAgent agent = new OpenAIClient(apiKeyCredential, openAIClientOptions)
+     .GetChatClient(model)
+     .CreateAIAgent(instructions: "你是一个乐于助人的助手，可以执行命令行脚本。请使用中文回答。", tools: [new ApprovalRequiredAIFunction(AIFunctionFactory.Create(ExecuteCmd))]);
 ```
 
-核心要点：
+这里有一个新东西就是`ApprovalRequiredAIFunction`。
 
-- **ApprovalRequiredAIFunction**：将普通函数包装为需要审批的函数
-- **AIFunctionFactory.Create**：将静态方法转换为AI可调用的函数
-- **instructions**：为Agent设置行为指令
+这说明如果调用这个函数需要经过人工审批。
 
-### 第三步：实现人工审批流程
-
-处理AI Agent返回的用户输入请求：
+4、审批流程
 
 ```csharp
+// Call the agent and check if there are any user input requests to handle.
+AgentThread thread = agent.GetNewThread();
+
 var response = await agent.RunAsync(InputText, thread);
 var userInputRequests = response.UserInputRequests.ToList();
+```
 
+我们先来看看这个是什么，运行起来打个断点看看：
+
+![image-20251017221907635](https://mingupupup.oss-cn-wuhan-lr.aliyuncs.com/imgs/image-20251017221907635.png)
+
+这就是一个Agent想要执行的函数，那么现在来看看如何审批：
+
+```csharp
 while (userInputRequests.Count > 0)
 {
-    if (_cts?.IsCancellationRequested == true) break;
-
     var userInputResponses = new List<ChatMessage>();
 
     foreach (var functionApprovalRequest in userInputRequests.OfType<FunctionApprovalRequestContent>())
@@ -137,208 +166,31 @@ while (userInputRequests.Count > 0)
         userInputResponses.Add(new ChatMessage(ChatRole.User, [functionApprovalRequest.CreateResponse(approved)]));
     }
 
-    // 将用户审批结果传回Agent
+    // Pass the user input responses back to the agent for further processing.
     response = await agent.RunAsync(userInputResponses, thread);
     userInputRequests = response.UserInputRequests.ToList();
 }
 ```
 
-审批流程说明：
+根据这个地方`userInputResponses.Add(new ChatMessage(ChatRole.User, [functionApprovalRequest.CreateResponse(approved)]));`中的approved传入的是true还是false表示用户是同意还是拒绝。
 
-1. **检测审批请求**：通过`UserInputRequests`获取需要审批的操作
-2. **显示审批对话框**：向用户展示即将执行的命令详情
-3. **收集审批结果**：用户同意或拒绝执行
-4. **反馈给Agent**：通过`CreateResponse`将审批结果传回
+然后发送请求获取新的回复，直到没有需要人工审批的函数为止。
 
-### 第四步：创建审批对话框
+5、流式响应
 
-**HumanApprovalDialogViewModel**实现：
+最后再获取一个流式响应：
 
 ```csharp
-public class HumanApprovalDialogViewModel : Screen
-{
-    private string _title = string.Empty;
-    public string Title
-    {
-        get => _title;
-        set => SetAndNotify(ref _title, value);
-    }
-
-    private string _message = string.Empty;
-    public string Message
-    {
-        get => _message;
-        set => SetAndNotify(ref _message, value);
-    }
-
-    // 同意操作
-    public void Approve()
-    {
-        RequestClose(true);
-    }
-
-    // 拒绝操作
-    public void Reject()
-    {
-        RequestClose(false);
-    }
-}
-```
-
-**审批对话框界面**（HumanApprovalDialogView.xaml）：
-
-```xaml
-<Window x:Class="Rouyan.Pages.View.HumanApprovalDialogView"
-        Title="{Binding Title}"
-        Height="200" Width="420"
-        WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize"
-        Topmost="True">
-    <Window.InputBindings>
-        <KeyBinding Command="{s:Action Approve}" Key="Y"/>
-        <KeyBinding Command="{s:Action Reject}" Key="N"/>
-    </Window.InputBindings>
-
-    <Grid Margin="16">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-
-        <!-- 消息显示区域 -->
-        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
-            <TextBlock Text="{Binding Message}"
-                       TextWrapping="Wrap"
-                       FontSize="14"/>
-        </ScrollViewer>
-
-        <!-- 按钮区域 -->
-        <Grid Grid.Row="1" Margin="0,16,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <Button Grid.Column="0"
-                    Content="同意(Y)"
-                    Command="{s:Action Approve}"
-                    IsDefault="True"/>
-
-            <Button Grid.Column="1"
-                    Content="拒绝(N)"
-                    Command="{s:Action Reject}"
-                    IsCancel="True"/>
-        </Grid>
-    </Grid>
-</Window>
-```
-
-界面特点：
-
-- **快捷键支持**：Y键同意，N键拒绝
-- **模态对话框**：`Topmost="True"`确保始终在最前
-- **Stylet命令绑定**：使用`{s:Action}`绑定ViewModel方法
-
-### 第五步：实现流式响应
-
-获取最终结果并流式显示：
-
-```csharp
-// 流式获取最终答案
-await foreach (var update in agent.RunStreamingAsync("输出最终答案", thread).WithCancellation(_cts!.Token))
+await foreach (var update in agent.RunStreamingAsync("输出最终答案", thread))
 {
     OutputText += update.Text;
 }
 ```
 
-流式响应的优势：
+## 最后
 
-- **实时反馈**：用户可以看到实时的输出过程
-- **可取消**：支持`CancellationToken`中断操作
-- **更好的用户体验**：避免长时间等待的空白期
+以上就是本期的全部内容，希望对你有所帮助。
 
-## 主界面设计
+全部代码已上传至GitHub，地址：https://github.com/Ming-jiayou/Rouyan。
 
-**TerminalAgentView.xaml**提供了简洁的用户界面：
-
-```xaml
-<Grid Margin="16">
-    <Grid.RowDefinitions>
-        <RowDefinition Height="Auto"/>    <!-- 输入区域 -->
-        <RowDefinition Height="Auto"/>    <!-- 按钮区域 -->
-        <RowDefinition Height="*"/>       <!-- 输出区域 -->
-    </Grid.RowDefinitions>
-
-    <!-- 输入文本框 -->
-    <TextBox Grid.Row="0"
-             Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
-             AcceptsReturn="True"
-             Height="60"/>
-
-    <!-- 控制按钮 -->
-    <StackPanel Grid.Row="1" Orientation="Horizontal">
-        <Button Content="运行" Command="{s:Action Run}"/>
-        <Button Content="取消" Command="{s:Action Cancel}"/>
-    </StackPanel>
-
-    <!-- 输出显示 -->
-    <TextBox Grid.Row="2"
-             Text="{Binding OutputText, UpdateSourceTrigger=PropertyChanged}"
-             IsReadOnly="True"/>
-</Grid>
-```
-
-## 安全性考虑
-
-在实现过程中，Rouyan采用了多层安全措施：
-
-**1、人工审批**
-
-所有命令执行都需要用户明确同意，防止恶意操作。
-
-**2、命令显示**
-
-在审批对话框中完整显示即将执行的命令内容。
-
-**3、错误处理**
-
-完善的异常捕获和错误信息反馈。
-
-**4、取消机制**
-
-支持在任何阶段取消操作，避免意外执行。
-
-## 实际使用效果
-
-用户在输入框中输入请求，例如"获取当前时间"：
-
-1. **显示等待窗体**：提示正在分析请求
-2. **AI分析**：Agent理解请求并生成相应的命令
-3. **审批对话框**：显示具体要执行的命令（如`date /t`）
-4. **执行命令**：用户同意后执行并获取结果
-5. **流式显示**：实时显示执行结果
-
-## 扩展可能性
-
-基于这个架构，可以进一步扩展：
-
-*1、**多种工具支持**：添加文件操作、网络请求等工具*
-
-*2、**审批级别**：根据命令危险程度设置不同审批级别*
-
-*3、**历史记录**：保存执行历史和审批记录*
-
-*4、**权限管理**：不同用户拥有不同的执行权限*
-
-## 总结
-
-通过Microsoft Agent Framework，我们成功创建了一个安全可靠的终端Agent。关键成功因素包括：
-
-- **合理的架构设计**：清晰的组件分离和职责划分
-- **完善的审批机制**：确保所有敏感操作都经过人工确认
-- **良好的用户体验**：流式响应和实时反馈
-- **充分的安全考虑**：多层防护措施
-
-这个实现为构建更复杂的AI Agent应用提供了良好的基础和参考。
-
-项目地址：https://github.com/Ming-jiayou/Rouyan
+终端助手的代码主要在src/Rouyan/Pages/ViewModel/TerminalAgentViewModel.cs中。
