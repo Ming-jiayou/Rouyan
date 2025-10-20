@@ -10,6 +10,8 @@ using System.ClientModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -67,6 +69,7 @@ public class TerminalAgentViewModel : Screen
         _cts?.Cancel();
     }
 
+    #region AI Function
     [Description("Execute a Windows cmd.exe script and return its output.")]
     static string ExecuteCmd([Description("The script content to run via 'cmd.exe /c'.")] string script)
     {
@@ -104,6 +107,32 @@ public class TerminalAgentViewModel : Screen
         }
     }
 
+    [Description("获取指定网页的文本内容")]
+    static async Task<string> GetWebPageContent([Description("要获取内容的网页URL")] string url)
+    {
+        try
+        {
+            using (var httpClient = new HttpClient())
+            {
+                // 设置请求头模拟浏览器访问
+                httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
+
+                // 获取网页内容
+                var htmlContent = await httpClient.GetStringAsync(url);
+
+                // 提取文本内容（简单的HTML标签清理）
+                var textContent = ExtractTextFromHtml(htmlContent);
+
+                return textContent;
+            }
+        }
+        catch (Exception ex)
+        {
+            return $"获取网页内容失败: {ex.Message}";
+        }
+    }
+    #endregion
+
     public async Task Run()
     {
         if (IsRunning) return;
@@ -136,7 +165,9 @@ public class TerminalAgentViewModel : Screen
 
             AIAgent agent = new OpenAIClient(apiKeyCredential, openAIClientOptions)
                 .GetChatClient(model)
-                .CreateAIAgent(instructions: "你是一个乐于助人的助手，可以执行命令行脚本。请使用中文回答。", tools: [new ApprovalRequiredAIFunction(AIFunctionFactory.Create(ExecuteCmd))]);
+                .CreateAIAgent(instructions: "你是一个乐于助人的助手，可以执行命令行脚本也可以获取网页内容。请使用中文回答。",
+                tools: [new ApprovalRequiredAIFunction(AIFunctionFactory.Create(ExecuteCmd)),
+                        new ApprovalRequiredAIFunction(AIFunctionFactory.Create(GetWebPageContent))]);
 
             // Call the agent and check if there are any user input requests to handle.
             AgentThread thread = agent.GetNewThread();
@@ -155,18 +186,46 @@ public class TerminalAgentViewModel : Screen
 
                 foreach (var functionApprovalRequest in userInputRequests.OfType<FunctionApprovalRequestContent>())
                 {
-                    var scriptContent = functionApprovalRequest.FunctionCall.Arguments?["script"]?.ToString() ?? "未知脚本";
                     var functionName = functionApprovalRequest.FunctionCall.Name;
+                    var args = functionApprovalRequest.FunctionCall.Arguments;
+
+                    string GetArg(string key, string fallback = "")
+                    {
+                        if (args != null && args.TryGetValue(key, out var value) && value != null)
+                            return value.ToString();
+                        return fallback;
+                    }
+
+                    string functionInfo;
+                    switch (functionName)
+                    {
+                        case "ExecuteCmd":
+                        {
+                            var script = GetArg("script", string.Empty);
+                            functionInfo = $"执行命令脚本：\n{script}";
+                            break;
+                        }
+                        case "GetWebPageContent":
+                        {
+                            var webUrl = GetArg("url", string.Empty);
+                            functionInfo = $"获取网页内容：\n{webUrl}";
+                            break;
+                        }
+                        default:
+                        {
+                            functionInfo = $"函数：{functionName}";
+                            break;
+                        }
+                    }
 
                     var dialogVm = new HumanApprovalDialogViewModel
                     {
-                        Title = "命令执行审批",
-                        Message = $"是否同意执行以下命令？\n\n函数名称: {functionName}\n脚本内容: {scriptContent}"
+                        Title = "函数调用审批",
+                        Message = $"是否同意以下操作？\n\n{functionInfo}"
                     };
 
                     bool? result = _windowManager.ShowDialog(dialogVm);
                     bool approved = result == true;
-
                     userInputResponses.Add(new ChatMessage(ChatRole.User, [functionApprovalRequest.CreateResponse(approved)]));
                 }
 
@@ -198,5 +257,23 @@ public class TerminalAgentViewModel : Screen
             _cts?.Dispose();
             _cts = null;
         }
+    }
+
+
+
+    private static string ExtractTextFromHtml(string html)
+    {
+        // 移除脚本和样式标签
+        html = Regex.Replace(html, "<script[^>]*>.*?</script>", "", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        html = Regex.Replace(html, "<style[^>]*>.*?</style>", "", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+        // 移除HTML标签
+        html = Regex.Replace(html, "<[^>]+>", " ");
+
+        // 清理多余的空白字符
+        html = Regex.Replace(html, @"\s+", " ");
+        html = html.Trim();
+
+        return html;
     }
 }
