@@ -4,6 +4,7 @@ using Microsoft.Extensions.AI;
 using OpenAI;
 using OpenAI.Chat;
 using Stylet;
+using StyletIoC;
 using System;
 using System.ClientModel;
 using System.ComponentModel;
@@ -13,15 +14,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
+using IContainer = StyletIoC.IContainer;
 
 namespace Rouyan.Pages.ViewModel;
 
 public class TerminalAgentViewModel : Screen
 {
+    private readonly IContainer _container;
     private readonly IWindowManager _windowManager;
 
-    public TerminalAgentViewModel(IWindowManager windowManager)
+    public TerminalAgentViewModel(IContainer container,IWindowManager windowManager)
     {
+        _container = container;
         _windowManager = windowManager;
     }
 
@@ -112,8 +116,9 @@ public class TerminalAgentViewModel : Screen
 
         try
         {
-            // 显示等待窗体
-            waitingVm = new WaitingViewModel { Text = "正在分析请求，请稍候..." };
+            // 显示等待窗体          
+            waitingVm = _container.Get<WaitingViewModel>();
+            waitingVm.Text = "正在分析请求，请稍候...";
             _windowManager.ShowWindow(waitingVm);
 
             // 配置AI Agent
