@@ -16,6 +16,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
 using IContainer = StyletIoC.IContainer;
@@ -451,6 +452,67 @@ public class TerminalAgentViewModel : Screen
     {
         OutputText = string.Empty;
         thread = null;
+    }
+
+    public async Task Test()
+    {
+        //var dialogVm = new HumanApprovalDialogViewModel
+        //{
+        //    Title = "函数调用审批",
+        //    Message = $"是否同意这个操作？"
+        //};
+
+        //bool? result = _windowManager.ShowDialog(dialogVm);
+
+        //// 显示等待窗体          
+        //var waitingVm = _container.Get<WaitingViewModel>();
+        //waitingVm.Text = "正在分析请求，请稍候...";
+        //_windowManager.ShowWindow(waitingVm);
+
+        //await Task.Delay(5000);
+
+        //waitingVm.RequestClose();
+
+        // 1. 基本用法 - 只显示消息
+        _windowManager.ShowMessageBox("你好");
+
+        // 2. 带标题的消息框
+        _windowManager.ShowMessageBox("操作完成", "提示");
+
+        // 3. 带确认和取消按钮的消息框
+        var result1 = _windowManager.ShowMessageBox("确定要删除这个文件吗？", "确认删除",
+            MessageBoxButton.OKCancel, MessageBoxImage.Question);
+
+        // 4. 带是/否/取消按钮和警告图标的消息框
+        var result2 = _windowManager.ShowMessageBox("文件已修改，是否保存？", "保存确认",
+            MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
+
+        // 5. 带自定义按钮标签的消息框 (使用YesNoCancel按钮以展示更多选项)
+        var customButtons = new Dictionary<MessageBoxResult, string>
+        {
+            { MessageBoxResult.Yes, "继续" },
+            { MessageBoxResult.No, "停止" },
+            { MessageBoxResult.Cancel, "取消" }
+        };
+        var result3 = _windowManager.ShowMessageBox("检测到潜在风险，是否继续操作？", "安全警告",
+            MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation, MessageBoxResult.No, MessageBoxResult.Cancel, customButtons);
+
+        // 6. 带文本对齐和流方向的消息框
+        _windowManager.ShowMessageBox("这是一个从右到左显示的消息框文本", "RTL示例",
+            MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.None, MessageBoxResult.None,
+            null, FlowDirection.RightToLeft, TextAlignment.Center);
+
+        // 7. 完整参数示例
+        var fullResult = _windowManager.ShowMessageBox(
+            "这是一个完整的消息框示例，包含了所有参数的使用",
+            "完整示例",
+            MessageBoxButton.OKCancel,
+            MessageBoxImage.Information,
+            MessageBoxResult.OK,
+            MessageBoxResult.Cancel,
+            null,
+            FlowDirection.LeftToRight,
+            TextAlignment.Left);
     }
 
 
